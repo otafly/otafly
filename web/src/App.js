@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import SettinsIcon from "@mui/icons-material/Settings";
+import BannerIcon from "./BannerIcon";
+
 import NewAppMeta from "./NewAppMeta";
 import AppMetaList from "./AppMetaList";
-import { Box, AppBar, Toolbar, IconButton, Typography } from "@mui/material";
+import { Box, AppBar, Toolbar, IconButton, Container } from "@mui/material";
 
 export default function App() {
+  console.log("PUBLIC_URL=" + process.env.PUBLIC_URL);
+  console.log("REACT_APP_PUBLIC_URL=" + process.env.REACT_APP_PUBLIC_URL);
   const [showSettings, setShowSettings] = useState(false);
   return (
     <div>
@@ -15,9 +19,9 @@ export default function App() {
             <IconButton color="inherit" sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Otafly
-            </Typography>
+            <Container sx={{ width: 160 }}>
+              <BannerIcon />
+            </Container>
             <IconButton color="inherit" onClick={() => setShowSettings(true)}>
               <SettinsIcon />
             </IconButton>

@@ -30,26 +30,51 @@ class AppService {
     
     init(app: Application) {
         self.app = app
-        let baseURL = URL(fileURLWithPath: app.directory.publicDirectory).appendingPathComponent("archives")
-        storage = FileStorage(baseURL: baseURL)
+        storage = FileStorage(name: "archives", dir: app.directory.publicDirectory)
     }
     
-    func query() async throws -> [AppMeta] {
+    func queryMeta() async throws -> [AppMeta] {
         let dbQuery = AppMeta.query(on: app.db)
         return try await dbQuery.sort(\.$updatedAt, .descending).all()
     }
     
-    func get(id: UUID) async throws -> AppMeta? {
+    func getMeta(id: UUID) async throws -> AppMeta? {
         try await AppMeta.find(id, on: app.db)
     }
     
-    func create(form: AppMetaForm) async throws {
+    func createMeta(form: AppMetaForm) async throws {
         let dbItem = AppMeta(title: form.title, content: form.content ?? "", platform: form.platform)
         try await dbItem.save(on: app.db)
     }
     
     func cleanup() async {
         
+    }
+    
+    func getPackageManifestXml(id: UUID, baseURL: String) async throws -> Data? {
+        guard let package = try await AppPackage.find(id, on: app.db) else { return nil }
+        guard let idString = package.id?.uuidString else { return nil }
+        let url = baseURL + storage.relativeUrl(id: idString)
+        
+        let plistDict: [String: Any] = [
+            "items": [
+                [
+                    "assets": [
+                        [
+                            "kind": "software-package",
+                            "url": url
+                        ]
+                    ],
+                    "metadata": [
+                        "bundle-identifier": package.appBundleId,
+                        "bundle-version": "\(package.appVersion) (\(package.appBuild))",
+                        "kind": "software",
+                        "title": "Panda"
+                    ]
+                ]
+            ]
+        ]
+        return try PropertyListSerialization.data(fromPropertyList: plistDict, format: .xml, options: 0)
     }
 }
 

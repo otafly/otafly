@@ -11,9 +11,8 @@ import {
 } from "@mui/material";
 import * as api from "./api";
 
-export default function AppMetaList(props) {
+export default function AppMetaList({ reload }) {
   const [data, setData] = useState(null);
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -21,10 +20,9 @@ export default function AppMetaList(props) {
       setData(result);
     }
     fetchData();
-  }, [props.reload]);
+  }, [reload]);
 
-  function ItemCard(props) {
-    const item = props.item;
+  function ItemCard({ item }) {
     return (
       <Card variant="outlined" sx={{ width: 300, height: 200 }}>
         <CardActionArea>

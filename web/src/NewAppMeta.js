@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import * as api from "./api";
 
-export default function NewAppMeta(props) {
+export default function NewAppMeta({ onSubmit }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({});
   const [error, setError] = useState(false);
@@ -45,7 +45,7 @@ export default function NewAppMeta(props) {
     try {
       await api.createAppMeta(formData);
       handleClose();
-      props.onSubmit();
+      onSubmit();
     } catch (error) {
       setError(true);
     }
@@ -132,28 +132,27 @@ export default function NewAppMeta(props) {
   );
 }
 
-function PlatformSelector(props) {
-  const { id, onChange, value, ...other } = props;
-  const [platform, setPlatform] = useState(props.value);
+function PlatformSelector({ id, onChange, value, ...other }) {
+  const [platform, setPlatform] = useState(value);
 
-  const handleOnChange = (event, value) => {
-    if (value == null) {
+  const handleOnChange = (event, val) => {
+    if (val == null) {
       return;
     }
-    setPlatform(value);
-    props.onChange({
+    setPlatform(val);
+    onChange({
       target: {
-        id: props.id,
-        value: value,
+        id: id,
+        value: val,
       },
     });
   };
 
   useEffect(() => {
-    props.onChange({
+    onChange({
       target: {
-        id: props.id,
-        value: props.value,
+        id: id,
+        value: value,
       },
     });
   }, []);

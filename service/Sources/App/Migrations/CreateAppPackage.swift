@@ -1,12 +1,14 @@
 import Fluent
 
-struct CreateAppSlot: AsyncMigration {
+struct CreateAppPackage: AsyncMigration {
     func prepare(on database: Database) async throws {
-        try await database.schema("app_slot")
+        try await database.schema("app_package")
             .id()
             .field("title", .string, .required)
-            .field("desc", .string, .required)
-            .field("app_key", .string, .required)
+            .field("content", .sql(raw: "TEXT"), .required)
+            .field("app_bundle_id", .string, .required)
+            .field("app_version", .string, .required)
+            .field("app_build", .string, .required)
             .field("platform", .enum(.init(name: "Platform", cases: Platform.allCases.map(\.rawValue))), .required)
             .field("created_at", .datetime)
             .field("updated_at", .datetime)
@@ -14,6 +16,6 @@ struct CreateAppSlot: AsyncMigration {
     }
 
     func revert(on database: Database) async throws {
-        try await database.schema("app_meta").delete()
+        try await database.schema("app_package").delete()
     }
 }

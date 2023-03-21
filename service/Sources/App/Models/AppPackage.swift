@@ -6,8 +6,8 @@ enum Platform: String, Codable, CaseIterable {
     case android
 }
 
-final class AppSlot: Model, Content {
-    static let schema = "app_slot"
+final class AppPackage: Model, Content {
+    static let schema = "app_package"
     
     @ID(key: .id)
     var id: UUID?
@@ -15,14 +15,20 @@ final class AppSlot: Model, Content {
     @Field(key: "title")
     var title: String
 
-    @Field(key: "desc")
-    var desc: String
+    @Field(key: "content")
+    var content: String
     
     @Enum(key: "platform")
     var platform: Platform
     
-    @Field(key: "app_key")
-    var appKey: String
+    @Field(key: "app_bundle_id")
+    var appBundleId: String
+    
+    @Field(key: "app_version")
+    var appVersion: String
+    
+    @Field(key: "app_build")
+    var appBuild: String
     
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
