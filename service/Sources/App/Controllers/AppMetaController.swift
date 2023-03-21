@@ -14,12 +14,12 @@ struct AppMetaController: RouteCollection {
         meta.post(use: create)
     }
     
-    func query(req: Request) async throws -> AppMetaViewModel {
+    func query(req: Request) async throws -> AppMetaModel {
         let items = try await app.appSvc.queryMeta()
         return try .init(items: items.map { try .init(dbItem: $0) })
     }
     
-    func get(req: Request) async throws -> AppMetaViewModel.Item {
+    func get(req: Request) async throws -> AppMetaModel.Item {
         guard let idString = req.parameters.get("id") else {
             throw Abort(.badRequest, reason: "missing app meta id")
         }

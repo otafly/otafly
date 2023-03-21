@@ -7,7 +7,7 @@ actor FileStorage {
     
     init(name: String, dir: String) {
         self.name = name
-        self.baseURL = URL(fileURLWithPath: dir).appendingPathComponent("archives")
+        self.baseURL = URL(fileURLWithPath: dir).appendingPathComponent("packages")
         try! FileManager.default.createDirectory(at: baseURL, withIntermediateDirectories: true, attributes: nil)
     }
     

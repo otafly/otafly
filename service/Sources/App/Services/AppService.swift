@@ -1,7 +1,8 @@
 import Vapor
 import Fluent
+import MultipartKit
 
-struct AppMetaViewModel: Content {
+struct AppMetaModel: Content {
     
     struct Item: Content {
         let id: String
@@ -78,7 +79,7 @@ class AppService {
     }
 }
 
-extension AppMetaViewModel.Item {
+extension AppMetaModel.Item {
     
     init(dbItem: AppMeta) throws {
         id = try dbItem.requireID().uuidString
