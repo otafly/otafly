@@ -52,6 +52,16 @@ class AppService {
         
     }
     
+    func createPackage(tempFileURL: URL) throws {
+        let dest = storage.localUrlFor(id: tempFileURL.lastPathComponent)
+        do {
+            try FileManager.default.moveItem(at: tempFileURL, to: dest)
+        } catch {
+            try FileManager.default.removeItem(at: tempFileURL)
+            throw error
+        }
+    }
+    
     func getPackageManifestXml(id: UUID, baseURL: String) async throws -> Data? {
         guard let package = try await AppPackage.find(id, on: app.db) else { return nil }
         guard let idString = package.id?.uuidString else { return nil }

@@ -57,3 +57,12 @@ private class CorsMiddleware: Middleware {
         }
     }
 }
+
+extension NonBlockingFileIO {
+    
+    static var `default`: NonBlockingFileIO = {
+        let pool = NIOThreadPool(numberOfThreads: Self.defaultThreadPoolSize)
+        pool.start()
+        return NonBlockingFileIO(threadPool: pool)
+    }()
+}

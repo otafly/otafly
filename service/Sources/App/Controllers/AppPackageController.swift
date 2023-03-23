@@ -34,53 +34,19 @@ struct AppPackageController: RouteCollection {
     }
     
     func create(req: Request) async throws -> HTTPStatus {
-        guard let boundary = req.headers.contentType?.parameters["boundary"] else {
-            throw Abort(.unsupportedMediaType)
+        guard let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            throw Abort(.internalServerError, reason: "cachesDirectory not found")
         }
-
-        let parser = MultipartParser(boundary: boundary)
-        
-        var parts = [MultipartPart]()
-        var headers = HTTPHeaders()
-        var data = ByteBuffer()
-
-        parser.onHeader = { (field, value) in
-            headers.replaceOrAdd(name: field, value: value)
-        }
-        parser.onBody = { new in
-            data.writeBuffer(&new)
-        }
-        parser.onPartComplete = {
-            let part = MultipartPart(headers: headers, body: data)
-            headers = [:]
-            data = ByteBuffer()
-            parts.append(part)
-        }
-        await parser.drain(req: req)
-        return .created
-    }
-}
-
-
-extension MultipartParser {
-    
-    func drain(req: Request) async {
-        return await withCheckedContinuation { continuation in
-            req.body.drain {
-                switch $0 {
-                case .buffer(let buffer):
-                    do {
-                        try self.execute(buffer)
-                    } catch {}
-                    return req.eventLoop.makeSucceededFuture(())
-                case .error:
-                    continuation.resume(returning: ())
-                    return req.eventLoop.makeSucceededFuture(())
-                case .end:
-                    continuation.resume(returning: ())
-                    return req.eventLoop.makeSucceededFuture(())
-                }
+        let resolver = FormDataResolver(cacheURL: cacheURL)
+        for value in try await resolver.handle(req: req) {
+            switch value {
+            case .text(let item):
+                print("\(item.name) value=\(item.value ?? "")")
+            case .file(let item):
+                print("\(item.name) file=\(item.tempFileURL.absoluteString)")
+                try app.appSvc.createPackage(tempFileURL: item.tempFileURL)
             }
         }
+        return .created
     }
 }

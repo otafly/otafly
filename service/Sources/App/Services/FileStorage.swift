@@ -11,7 +11,7 @@ actor FileStorage {
         try! FileManager.default.createDirectory(at: baseURL, withIntermediateDirectories: true, attributes: nil)
     }
     
-    nonisolated func pathFor(id: String) -> URL {
+    nonisolated func localUrlFor(id: String) -> URL {
         baseURL.appendingPathComponent(id)
     }
     
