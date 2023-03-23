@@ -38,13 +38,13 @@ struct AppPackageController: RouteCollection {
             throw Abort(.internalServerError, reason: "cachesDirectory not found")
         }
         let resolver = FormDataResolver(cacheURL: cacheURL)
-        for value in try await resolver.handle(req: req) {
+        for try await (name, value) in try await resolver.resolve(req: req) {
             switch value {
-            case .text(let item):
-                print("\(item.name) value=\(item.value ?? "")")
-            case .file(let item):
-                print("\(item.name) file=\(item.tempFileURL.absoluteString)")
-                try app.appSvc.createPackage(tempFileURL: item.tempFileURL)
+            case .text(let value):
+                print("\(name) value=\(value ?? "")")
+            case .file(let url):
+                print("\(name) file=\(url)")
+                try app.appSvc.createPackage(tempFileURL: url)
             }
         }
         return .created

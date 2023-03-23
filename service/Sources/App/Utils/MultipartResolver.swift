@@ -1,97 +1,106 @@
 import Foundation
 import Vapor
 import NIO
-@testable import MultipartKit
+import MultipartKit
+
+enum FormDataValue {
+    
+    case text(String?)
+    case file(URL)
+}
 
 class FormDataResolver {
     
-    private var cacheURL: URL
+    private let cacheURL: URL
     
     init(cacheURL: URL) {
         self.cacheURL = cacheURL
     }
     
-    func handle(req: Request) async throws -> [FormDataValue] {
+    func resolve(req: Request) async throws -> AsyncThrowingStream<(String, FormDataValue), Error> {
         guard let boundary = req.headers.contentType?.parameters["boundary"] else {
             throw Abort(.unsupportedMediaType)
         }
-        let parser = MultipartParser(boundary: boundary)
-        var result = [FormDataValue]()
-        
-        var current: FormDataValue?
+        let stream = MultipartParser(boundary: boundary).drain(req: req)
+        return AsyncThrowingStream {
+            try await self.resolve(req: req, stream: stream)
+        }
+    }
+    
+    private func resolve(req: Request, stream: PartEvents) async throws -> (String, FormDataValue)? {
+        var partResolver: FormPartResolver?
         var headers = HTTPHeaders()
-        var data = ByteBuffer()
-        for try await event in parser.drain(req: req) {
+        
+        for try await event in stream {
             switch event {
             case let .header(field, value):
                 headers.replaceOrAdd(name: field, value: value)
             case .headerEnded:
-                if let name = headers.contentName {
-                    if headers.isFile {
-                        let tempURL = self.cacheURL.appendingPathComponent(UUID().uuidString, isDirectory: false)
-                        let item = FormDataFile(eventLoop: req.eventLoop, name: name, tempFileURL: tempURL)
-                        try await item.open()
-                        current = .file(item)
-                    } else {
-                        current = .text(FormDataText(name))
-                    }
+                guard let name = headers.contentName else {
+                    throw Abort(.badRequest, reason: "missing name in form-data")
                 }
-            case .body(let new):
-                guard let current else { continue }
-                switch current {
-                case .text:
-                    data.writeImmutableBuffer(new)
-                case .file(let item):
-                    try await item.write(buffer: new)
+                let resolver: FormPartResolver
+                if headers.isFile {
+                    let tempURL = self.cacheURL.appendingPathComponent(UUID().uuidString, isDirectory: false)
+                    resolver = FormPartFileResolver(eventLoop: req.eventLoop, name: name, tempFileURL: tempURL)
+                } else {
+                    resolver = FormPartTextResolver(name)
                 }
+                partResolver = resolver
+                try await resolver.open()
+            case .body(var new):
+                guard let partResolver else {
+                    throw Abort(.badRequest, reason: "missing name in form-data")
+                }
+                try await partResolver.write(buffer: &new)
             case .complete:
-                if let current {
-                    let part = MultipartPart(headers: headers, body: ByteBuffer())
-                    switch current {
-                    case .text(let item):
-                        item.part = part
-                        item.value = data.readString(length: data.readableBytes)
-                    case .file(let item):
-                        item.part = part
-                        try await item.close()
-                    }
-                    result.append(current)
+                guard let partResolver else {
+                    throw Abort(.badRequest, reason: "missing name in form-data")
                 }
-                current = nil
-                headers = [:]
-                data = ByteBuffer()
+                return try await partResolver.finish(headers: headers)
             }
         }
-        return result
+        return nil
     }
 }
 
-enum FormDataValue {
+private typealias PartEvents = AsyncThrowingStream<MultipartParser.PartEvent, Error>
+
+private protocol FormPartResolver {
     
-    case text(FormDataText)
-    case file(FormDataFile)
+    func open() async throws
+        
+    func write(buffer: inout ByteBuffer) async throws
+    
+    func finish(headers: HTTPHeaders) async throws -> (String, FormDataValue)
 }
 
-class FormDataText {
+private class FormPartTextResolver: FormPartResolver {
     
     let name: String
     
-    var value: String?
-    
-    var part: MultipartPart?
+    private var data = ByteBuffer()
     
     init(_ name: String) {
         self.name = name
     }
+    
+    func open() async throws {}
+    
+    func write(buffer: inout ByteBuffer) async throws {
+        data.writeBuffer(&buffer)
+    }
+    
+    func finish(headers: HTTPHeaders) async throws -> (String, FormDataValue) {
+        (name, .text(data.readString(length: data.readableBytes)))
+    }
 }
 
-class FormDataFile {
+private class FormPartFileResolver: FormPartResolver {
     
     let name: String
     
     var tempFileURL: URL
-    
-    var part: MultipartPart?
     
     private let eventLoop: EventLoop
     
@@ -102,9 +111,6 @@ class FormDataFile {
         self.name = name
         self.tempFileURL = tempFileURL
     }
-}
-
-fileprivate extension FormDataFile {
     
     func open() async throws {
         handler = try await NonBlockingFileIO.default.openFile(
@@ -114,15 +120,16 @@ fileprivate extension FormDataFile {
             eventLoop: eventLoop).get()
     }
     
-    func write(buffer: ByteBuffer) async throws {
+    func write(buffer: inout ByteBuffer) async throws {
         guard let handler else { return }
         try await NonBlockingFileIO.default.write(fileHandle: handler, buffer: buffer, eventLoop: eventLoop).get()
     }
     
-    func close() async throws {
+    func finish(headers: HTTPHeaders) async throws -> (String, FormDataValue) {
         try await eventLoop.performWithTask {
             try self.handler?.close()
         }.get()
+        return (name, .file(tempFileURL))
     }
 }
 
@@ -139,9 +146,34 @@ private extension HTTPHeaders {
     var contentName: String? {
         getParameter("Content-Disposition", "name")
     }
+    
+    func getParameter(_ name: String, _ key: String) -> String? {
+        return self.headerParts(name: name).flatMap {
+            $0.filter { $0.hasPrefix("\(key)=") }
+                .first?
+                .split(separator: "=")
+                .last
+                .flatMap { $0 .trimmingCharacters(in: .quotes)}
+        }
+    }
+    
+    func headerParts(name: String) -> [String]? {
+        return self[name]
+            .first
+            .flatMap {
+                $0.split(separator: ";")
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+            }
+    }
 }
 
-extension MultipartParser {
+extension CharacterSet {
+    static var quotes: CharacterSet {
+        return .init(charactersIn: #""'"#)
+    }
+}
+
+private extension MultipartParser {
     
     enum PartEvent {
         case header(String, String)
@@ -150,9 +182,12 @@ extension MultipartParser {
         case complete
     }
     
-    func drain(req: Request) -> AsyncThrowingStream<PartEvent, Error> {
+    func drain(req: Request) -> PartEvents {
         AsyncThrowingStream { cont in
             var isBody = false
+            let chunkSize = NonBlockingFileIO.defaultChunkSize
+            var buffer = ByteBuffer()
+            buffer.reserveCapacity(chunkSize)
             onHeader = { (field, value) in
                 isBody = false
                 cont.yield(.header(field, value))
@@ -162,10 +197,18 @@ extension MultipartParser {
                     cont.yield(.headerEnded)
                     isBody = true
                 }
-                cont.yield(.body(new))
+                buffer.writeBuffer(&new)
+                if buffer.readableBytes > chunkSize {
+                    cont.yield(.body(buffer))
+                    buffer.clear()
+                }
             }
             onPartComplete = {
                 isBody = false
+                if buffer.readableBytes > 0 {
+                    cont.yield(.body(buffer))
+                    buffer.clear()
+                }
                 cont.yield(.complete)
             }
             drain(req: req) { error in
