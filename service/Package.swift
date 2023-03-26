@@ -13,6 +13,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent-mysql-driver.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/queues.git", from: "1.8.0"),
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0"),
     ],
     targets: [
         .target(
@@ -23,6 +24,7 @@ let package = Package(
                 .product(name: "Leaf", package: "leaf"),
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "Queues", package: "queues"),
+                .product(name: "ZIPFoundation", package: "ZIPFoundation"),
             ],
             swiftSettings: [
                 // Enable better optimizations when building in Release configuration. Despite the use of

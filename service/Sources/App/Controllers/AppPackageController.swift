@@ -23,7 +23,7 @@ struct AppPackageController: RouteCollection {
         guard let id = UUID(uuidString: idString) else {
             throw Abort(.badRequest, reason: "wrong id format: \(idString)")
         }
-        guard let plist = try await app.appSvc.getPackageManifestXml(id: id, baseURL: req.baseURL) else {
+        guard let plist = try await app.appSvc.getPackageManifestXml(id: id, baseURL: req.baseURLFromForwarded(app: app)) else {
             throw Abort(.notFound)
         }
         let body = Response.Body(data: plist)
@@ -38,15 +38,37 @@ struct AppPackageController: RouteCollection {
             throw Abort(.internalServerError, reason: "cachesDirectory not found")
         }
         let resolver = FormDataResolver(cacheURL: cacheURL)
+        
+        var token: String?
+        var content: String?
+        var tempURL: URL?
+        
         for try await (name, value) in try await resolver.resolve(req: req) {
             switch value {
             case .text(let value):
-                print("\(name) value=\(value ?? "")")
+                switch name {
+                case "token":
+                    guard let value else {
+                        throw Abort(.badRequest, reason: "missing token")
+                    }
+                    token = value
+                case "content":
+                    content = value
+                default: continue
+                }
             case .file(let url):
-                print("\(name) file=\(url)")
-                try app.appSvc.createPackage(tempFileURL: url)
+                if name == "file" {
+                    tempURL = url
+                }
             }
         }
+        guard let token else {
+            throw Abort(.badRequest, reason: "missing token")
+        }
+        guard let tempURL else {
+            throw Abort(.badRequest, reason: "missing file")
+        }
+        try await app.appSvc.createPackage(accessToken: token, content: content, tempFileURL: tempURL)
         return .created
     }
 }

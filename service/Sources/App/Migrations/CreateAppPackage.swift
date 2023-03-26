@@ -4,6 +4,7 @@ struct CreateAppPackage: AsyncMigration {
     func prepare(on database: Database) async throws {
         try await database.schema("app_package")
             .id()
+            .field("app_meta_id", .uuid, .required, .references("app_meta", "id"))
             .field("title", .string, .required)
             .field("content", .sql(raw: "TEXT"), .required)
             .field("app_bundle_id", .string, .required)

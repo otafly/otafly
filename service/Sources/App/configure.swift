@@ -26,7 +26,7 @@ public func configure(_ app: Application) throws {
         tlsConfiguration: tls
     ), as: .mysql)
     
-    app.migrations.add(CreateAppMeta())
+    app.migrations.add(CreateAppMeta(), CreateAppPackage())
     try app.autoMigrate().wait()
     
     app.queues.schedule(CleanupJob()).hourly().at(0)

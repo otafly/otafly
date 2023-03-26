@@ -31,7 +31,7 @@ class AppService {
     
     init(app: Application) {
         self.app = app
-        storage = FileStorage(name: "archives", dir: app.directory.publicDirectory)
+        storage = FileStorage(name: "packages", dir: app.directory.publicDirectory)
     }
     
     func queryMeta() async throws -> [AppMeta] {
@@ -48,24 +48,33 @@ class AppService {
         try await dbItem.save(on: app.db)
     }
     
+    func findMeta(accessToken: String) async throws -> AppMeta? {
+        let dbQuery = AppMeta.query(on: app.db)
+        dbQuery.filter(\.$accessToken == accessToken)
+        return try await dbQuery.first()
+    }
+    
     func cleanup() async {
         
     }
     
-    func createPackage(tempFileURL: URL) throws {
-        let dest = storage.localUrlFor(id: tempFileURL.lastPathComponent)
-        do {
-            try FileManager.default.moveItem(at: tempFileURL, to: dest)
-        } catch {
-            try FileManager.default.removeItem(at: tempFileURL)
-            throw error
+    func createPackage(accessToken: String, content: String?, tempFileURL: URL) async throws {
+        defer {
+            cleanup(tempFileURL: tempFileURL)
         }
+        guard let meta = try await findMeta(accessToken: accessToken) else {
+            throw Abort(.badRequest, reason: "invalid token")
+        }
+        let info = try PackageResolver().extract(tempFileURL)
+        let package = try AppPackage(id: UUID(), appMeta: meta, info: info, content: content)
+        let dest = storage.localUrlFor(id: try package.fileId())
+        try FileManager.default.moveItem(at: tempFileURL, to: dest)
+        try await package.save(on: app.db)
     }
     
     func getPackageManifestXml(id: UUID, baseURL: String) async throws -> Data? {
         guard let package = try await AppPackage.find(id, on: app.db) else { return nil }
-        guard let idString = package.id?.uuidString else { return nil }
-        let url = baseURL + storage.relativeUrl(id: idString)
+        let url = baseURL + storage.relativeUrl(id: try package.fileId())
         
         let plistDict: [String: Any] = [
             "items": [
@@ -86,6 +95,16 @@ class AppService {
             ]
         ]
         return try PropertyListSerialization.data(fromPropertyList: plistDict, format: .xml, options: 0)
+    }
+    
+    private func cleanup(tempFileURL: URL) {
+        do {
+            if FileManager.default.fileExists(atPath: tempFileURL.absoluteString) {
+                try FileManager.default.removeItem(at: tempFileURL)
+            }
+        } catch {
+            app.logger.warning("failed to cleanup temp file \(tempFileURL) with error: \(error)")
+        }
     }
 }
 

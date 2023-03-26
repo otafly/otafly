@@ -12,6 +12,9 @@ final class AppPackage: Model, Content {
     @ID(key: .id)
     var id: UUID?
 
+    @Parent(key: "app_meta_id")
+    var appMeta: AppMeta
+    
     @Field(key: "title")
     var title: String
 
@@ -38,8 +41,14 @@ final class AppPackage: Model, Content {
     
     init() { }
 
-    init(id: UUID? = nil, title: String, desc: String, platform: Platform) {
+    init(id: UUID? = nil, appMeta: AppMeta, info: PackageInfo, content: String?) throws {
         self.id = id
-        self.title = title
+        self.$appMeta.id = try appMeta.requireID()
+        self.title = appMeta.title
+        self.platform = appMeta.platform
+        self.content = content ?? ""
+        self.appBundleId = info.bundleId
+        self.appVersion = info.version
+        self.appBuild = info.build
     }
 }
