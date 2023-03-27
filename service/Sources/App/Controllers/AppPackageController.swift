@@ -37,7 +37,7 @@ struct AppPackageController: RouteCollection {
         guard let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw Abort(.internalServerError, reason: "cachesDirectory not found")
         }
-        let resolver = FormDataResolver(cacheURL: cacheURL)
+        let resolver = FormDataResolver(cacheURL: cacheURL.appendingPathComponent("otafly"))
         
         var token: String?
         var content: String?

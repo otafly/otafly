@@ -65,7 +65,7 @@ class AppService {
         guard let meta = try await findMeta(accessToken: accessToken) else {
             throw Abort(.badRequest, reason: "invalid token")
         }
-        let info = try PackageResolver().extract(tempFileURL)
+        let info = try meta.platform.packageResolver.extract(tempFileURL)
         let package = try AppPackage(id: UUID(), appMeta: meta, info: info, content: content)
         let dest = storage.localUrlFor(id: try package.fileId())
         try FileManager.default.moveItem(at: tempFileURL, to: dest)
@@ -99,7 +99,7 @@ class AppService {
     
     private func cleanup(tempFileURL: URL) {
         do {
-            if FileManager.default.fileExists(atPath: tempFileURL.absoluteString) {
+            if FileManager.default.fileExists(atPath: tempFileURL.path) {
                 try FileManager.default.removeItem(at: tempFileURL)
             }
         } catch {

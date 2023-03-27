@@ -15,6 +15,7 @@ class FormDataResolver {
     
     init(cacheURL: URL) {
         self.cacheURL = cacheURL
+        try! FileManager.default.createDirectory(at: cacheURL, withIntermediateDirectories: true, attributes: nil)
     }
     
     func resolve(req: Request) async throws -> AsyncThrowingStream<(String, FormDataValue), Error> {
