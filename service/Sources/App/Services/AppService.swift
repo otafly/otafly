@@ -1,28 +1,7 @@
 import Vapor
+import SQLKit
 import Fluent
 import MultipartKit
-
-struct AppMetaModel: Content {
-    
-    struct Item: Content {
-        let id: String
-        let title: String
-        let content: String
-        let platform: Platform
-        let accessToken: String
-        let createdAt: Date
-        let updatedAt: Date
-    }
-    
-    let items: [Item]
-}
-
-struct AppMetaForm: Content {
-    
-    let title: String
-    let content: String?
-    let platform: Platform
-}
 
 class AppService {
     
@@ -56,6 +35,14 @@ class AppService {
     
     func cleanup() async {
         
+    }
+    
+    func queryLatestPackages() async throws -> [AppPackage] {
+        guard let sql = app.db as? SQLDatabase else {
+            throw Abort(.internalServerError)
+        }
+        return try await sql.raw("SELECT p.* FROM app_meta m INNER JOIN app_package p ON p.app_meta_id = m.id WHERE p.id = (SELECT id FROM app_package WHERE app_meta_id = m.id ORDER BY updated_at DESC LIMIT 1) ORDER BY p.updated_at DESC")
+            .all(decoding: AppPackage.self)
     }
     
     func createPackage(accessToken: String, content: String?, tempFileURL: URL) async throws {
@@ -116,6 +103,21 @@ extension AppMetaModel.Item {
         content = dbItem.content
         platform = dbItem.platform
         accessToken = dbItem.accessToken
+        createdAt = dbItem.createdAt ?? Date(timeIntervalSince1970: 0)
+        updatedAt = dbItem.updatedAt ?? createdAt
+    }
+}
+
+extension AppPackageModel.Item {
+    
+    init(dbItem: AppPackage) throws {
+        id = try dbItem.requireID().uuidString
+        title = dbItem.title
+        content = dbItem.content
+        platform = dbItem.platform
+        appBundleId = dbItem.appBundleId
+        appVersion = dbItem.appVersion
+        appBuild = dbItem.appBuild
         createdAt = dbItem.createdAt ?? Date(timeIntervalSince1970: 0)
         updatedAt = dbItem.updatedAt ?? createdAt
     }

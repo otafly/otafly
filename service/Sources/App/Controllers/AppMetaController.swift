@@ -15,8 +15,7 @@ struct AppMetaController: RouteCollection {
     }
     
     func query(req: Request) async throws -> AppMetaModel {
-        let items = try await app.appSvc.queryMeta()
-        return try .init(items: items.map { try .init(dbItem: $0) })
+        try await .init(items: app.appSvc.queryMeta().map(AppMetaModel.Item.init(dbItem:)))
     }
     
     func get(req: Request) async throws -> AppMetaModel.Item {
@@ -38,4 +37,26 @@ struct AppMetaController: RouteCollection {
         try await app.appSvc.createMeta(form: form)
         return .created
     }
+}
+
+struct AppMetaModel: Content {
+    
+    struct Item: Content {
+        let id: String
+        let title: String
+        let content: String
+        let platform: Platform
+        let accessToken: String
+        let createdAt: Date
+        let updatedAt: Date
+    }
+    
+    let items: [Item]
+}
+
+struct AppMetaForm: Content {
+    
+    let title: String
+    let content: String?
+    let platform: Platform
 }

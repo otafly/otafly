@@ -7,13 +7,17 @@ struct AppPackageController: RouteCollection {
     let app: Application
     
     func boot(routes: RoutesBuilder) throws {
-        //routes.get("api", "app", "packages", use: query)
+        routes.get("api", "app", "packages", "latest", use: queryLatest)
         let package = routes.grouped("api", "app", "package")
         package.group(":id") { package in
             //package.get(use: get)
             package.get("manifest", use: getManifest)
         }
         package.on(.POST, body: .stream, use: create)
+    }
+    
+    func queryLatest(req: Request) async throws -> AppPackageModel {
+        .init(items: try await app.appSvc.queryLatestPackages().map(AppPackageModel.Item.init(dbItem:)))
     }
     
     func getManifest(req: Request) async throws -> Response {
@@ -71,4 +75,21 @@ struct AppPackageController: RouteCollection {
         try await app.appSvc.createPackage(accessToken: token, content: content, tempFileURL: tempURL)
         return .created
     }
+}
+
+struct AppPackageModel: Content {
+    
+    struct Item: Content {
+        let id: String
+        let title: String
+        let content: String
+        let platform: Platform
+        let appBundleId: String
+        let appVersion: String
+        let appBuild: String
+        let createdAt: Date
+        let updatedAt: Date
+    }
+    
+    let items: [Item]
 }
