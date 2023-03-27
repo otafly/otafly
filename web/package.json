@@ -15,6 +15,7 @@
     "@mui/material": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "react-router-dom": "latest",
     "react-scripts": "latest"
   },
   "browserslist": {

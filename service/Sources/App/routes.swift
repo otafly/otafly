@@ -3,10 +3,7 @@ import Vapor
 
 func routes(_ app: Application) throws {
     
-    app.get { req in
-        req.redirect(to: "index.html")
-    }
-
+    try app.register(collection: WebRouteController(app: app))
     try app.register(collection: AppMetaController(app: app))
     try app.register(collection: AppPackageController(app: app))
 }
