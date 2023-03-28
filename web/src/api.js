@@ -1,5 +1,10 @@
 import { config } from "./config";
 
+export async function getLatestPackages() {
+  const response = await fetch(config.api_endpoint + "/app/packages/latest");
+  return await response.json();
+}
+
 export async function createAppMeta(meta) {
   const body = Object.keys(meta)
     .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(meta[key]))

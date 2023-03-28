@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./Home";
-import Setting from "./Setting";
+import Home from "./home/Home";
+import Setting from "./setting/Setting";
 
 export default function App() {
   return (
