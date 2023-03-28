@@ -12,7 +12,7 @@ export default function Home() {
           <Container sx={{ width: 160 }}>
             <BannerIcon />
           </Container>
-          <IconButton color="inherit" component={Link} to="/setting">
+          <IconButton color="inherit" component={Link} to="/view/setting">
             <SettingsIcon />
           </IconButton>
         </Toolbar>

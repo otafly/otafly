@@ -1,6 +1,5 @@
 import Fluent
 import FluentMySQLDriver
-import Leaf
 import Vapor
 
 // configures your application
@@ -9,8 +8,6 @@ public func configure(_ app: Application) throws {
     app.middleware.use(CorsMiddleware())
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 #endif
-    
-    app.views.use(.leaf)
     
     app.http.server.configuration.port = Environment.get("PORT").flatMap(Int.init(_:)) ?? 8080
     
