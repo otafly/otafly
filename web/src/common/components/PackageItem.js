@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   IconButton,
   ListItem,
@@ -17,9 +17,9 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { useNavigate } from 'react-router-dom';
-import { formatDate } from "../../common/util";
+import { formatDate } from "../util";
 
-export default function HomePackageItem({ item, showMore = true }) {
+export default function PackageItem({ item, showMore = true }) {
   const navigate = useNavigate();
 
   const handleDownloadClick = () => {
