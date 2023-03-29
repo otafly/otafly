@@ -4,6 +4,7 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  Collapse,
   Divider,
   Avatar,
   Typography,
@@ -12,14 +13,32 @@ import DownloadIcon from "@mui/icons-material/Download";
 import MoreIcon from "@mui/icons-material/MoreHoriz";
 import AndroidIcon from "@mui/icons-material/Android";
 import AppleIcon from "@mui/icons-material/Apple";
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-export default function HomePackageItem({ item }) {
+import { useNavigate } from 'react-router-dom';
+import { formatDate } from "../util";
+
+export default function PackageItem({ item, showMore = true }) {
+  const navigate = useNavigate();
+
   const handleDownloadClick = () => {
-    console.log("download");
+    const downloadLink = document.createElement('a');
+    downloadLink.href = item.url;
+    downloadLink.download = item.title;
+    downloadLink.style.display = 'none';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   };
 
   const handleMoreClick = () => {
-    console.log("more");
+    navigate(`/view/package/${item.title}/${item.appId}`);
+  };
+
+  const [open, setOpen] = React.useState(false);
+  const handleClickExpand = () => {
+    setOpen(!open);
   };
 
   return (
@@ -28,16 +47,29 @@ export default function HomePackageItem({ item }) {
         alignItems="flex-start"
         secondaryAction={
           <React.Fragment>
+
             <IconButton
               edge="end"
-              sx={{ marginRight: "8px" }}
+              onClick={handleClickExpand}
+            >
+              {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+
+            <IconButton
+              edge="end"
+              sx={{ marginLeft: "12px" }}
               onClick={handleDownloadClick}
             >
               <DownloadIcon />
             </IconButton>
-            <IconButton edge="end" onClick={handleMoreClick}>
-              <MoreIcon />
-            </IconButton>
+            {showMore && (
+              <IconButton
+                edge="end"
+                sx={{ marginLeft: "12px" }}
+                onClick={handleMoreClick}>
+                <MoreIcon />
+              </IconButton>
+            )}
           </React.Fragment>
         }
       >
@@ -67,6 +99,17 @@ export default function HomePackageItem({ item }) {
               >
                 {formatDate(item.createdAt)}
               </Typography>
+              <Collapse in={open} timeout="auto" unmountOnExit>
+                <Typography
+                  sx={{ display: "inline" }}
+                  component="span"
+                  variant="body3"
+                  color="text.blueGrey"
+                >
+                  <br />
+                  {item.content}
+                </Typography>
+              </Collapse>
             </React.Fragment>
           }
         />
@@ -74,18 +117,4 @@ export default function HomePackageItem({ item }) {
       <Divider variant="inset" component="li" />
     </div>
   );
-}
-
-function formatDate(dateString) {
-  const date = new Date(dateString);
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
