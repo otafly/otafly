@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Container, List } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Container, List, ListSubheader } from "@mui/material";
 import { Link } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BannerIcon from "./components/BannerIcon";
@@ -19,8 +19,8 @@ export default function Home({ reload }) {
 
   const packageItems = data
     ? data.items.map((item, index) => (
-        <HomePackageItem key={index} item={item} />
-      ))
+      <HomePackageItem key={index} item={item} />
+    ))
     : null;
 
   return (
@@ -35,7 +35,9 @@ export default function Home({ reload }) {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <List>{packageItems}</List>
+      <List>
+        {packageItems}
+      </List>
     </div>
   );
 }

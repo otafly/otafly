@@ -4,6 +4,10 @@ export async function getLatestPackages() {
   return await request(config.api_endpoint + "/app/packages/latest", "GET");
 }
 
+export async function getPackage(id) {
+
+}
+
 export async function createAppMeta(meta) {
   const body = Object.keys(meta)
     .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(meta[key]))
