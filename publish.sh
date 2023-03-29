@@ -17,6 +17,6 @@ mkdir "$PUB_DIR"
 mv service/Public "$PUB_DIR/Public"
 mv service/.build/release/Run "$PUB_DIR/Run"
 
-mkdir -p "$PUB_DIR"
+mkdir -p "$DEST_DIR"
 cp -rf "$PUB_DIR/*" "$DEST_DIR"
 rm -rf "$PUB_DIR"
