@@ -60,9 +60,9 @@ class AndroidPackageResolver: PackageResolver {
             try? FileManager.default.removeItem(at: apkoutURL)
         }
         let process = Process()
-        process.launchPath = apktool
+        process.executableURL = URL(fileURLWithPath: apktool)
         process.arguments = ["d", "-o", apkoutURL.path, "-s", "-f", packageURL.path]
-        process.launch()
+        try process.run()
         process.waitUntilExit()
         guard process.terminationStatus == 0 else {
             throw Abort(.badRequest, reason: "failed to extract from apk")
