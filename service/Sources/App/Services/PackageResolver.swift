@@ -2,6 +2,9 @@ import Foundation
 import Vapor
 import ZIPFoundation
 import Yams
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
 
 protocol PackageResolver {
     

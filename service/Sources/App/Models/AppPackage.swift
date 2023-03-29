@@ -52,3 +52,10 @@ final class AppPackage: Model, Content {
         self.appBuild = info.build
     }
 }
+
+extension AppPackage {
+    
+    var appId: UUID {
+        $appMeta.id
+    }
+}

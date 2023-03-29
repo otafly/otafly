@@ -5,8 +5,8 @@ import MultipartKit
 
 class AppService {
     
-    private let app: Application
-    private let storage: FileStorage
+    let app: Application
+    let storage: FileStorage
     
     init(app: Application) {
         self.app = app
@@ -14,8 +14,9 @@ class AppService {
     }
     
     func queryMeta() async throws -> [AppMeta] {
-        let dbQuery = AppMeta.query(on: app.db)
-        return try await dbQuery.sort(\.$updatedAt, .descending).all()
+        try await AppMeta.query(on: app.db)
+            .sort(\.$updatedAt, .descending)
+            .all()
     }
     
     func getMeta(id: UUID) async throws -> AppMeta? {
@@ -28,13 +29,17 @@ class AppService {
     }
     
     func findMeta(accessToken: String) async throws -> AppMeta? {
-        let dbQuery = AppMeta.query(on: app.db)
-        dbQuery.filter(\.$accessToken == accessToken)
-        return try await dbQuery.first()
+        try await AppMeta.query(on: app.db)
+            .filter(\.$accessToken == accessToken)
+            .first()
     }
     
     func cleanup() async {
         
+    }
+    
+    func getPackage(id: UUID) async throws -> AppPackage? {
+        try await AppPackage.query(on: app.db).filter(\.$id == id).first()
     }
     
     func queryLatestPackages() async throws -> [AppPackage] {
@@ -43,6 +48,13 @@ class AppService {
         }
         return try await sql.raw("SELECT p.* FROM app_meta m INNER JOIN app_package p ON p.app_meta_id = m.id WHERE p.id = (SELECT id FROM app_package WHERE app_meta_id = m.id ORDER BY updated_at DESC LIMIT 1) ORDER BY p.updated_at DESC")
             .all(decoding: AppPackage.self)
+    }
+    
+    func queryPackages(appId: UUID) async throws -> [AppPackage] {
+        try await AppPackage.query(on: app.db)
+            .filter(\.$appMeta.$id == appId)
+            .sort(\.$updatedAt, .descending)
+            .all()
     }
     
     func createPackage(accessToken: String, content: String?, tempFileURL: URL) async throws {
@@ -122,6 +134,7 @@ extension AppPackageModel.Item {
     
     init(dbItem: AppPackage, svc: AppService, baseURL: String) throws {
         id = try dbItem.requireID().uuidString
+        appId = dbItem.appId.uuidString
         title = dbItem.title
         content = dbItem.content
         platform = dbItem.platform

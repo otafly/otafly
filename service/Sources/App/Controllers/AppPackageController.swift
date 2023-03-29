@@ -7,37 +7,37 @@ struct AppPackageController: RouteCollection {
     let app: Application
     
     func boot(routes: RoutesBuilder) throws {
-        routes.get("api", "app", "packages", "latest", use: queryLatest)
+        let packages = routes.grouped("api", "app", "packages")
+        packages.get(use: query)
+        packages.get("latest", use: queryLatest)
+        
         let package = routes.grouped("api", "app", "package")
         package.group(":id") { package in
-            //package.get(use: get)
+            package.get(use: get)
             package.get("manifest", use: getManifest)
         }
         package.on(.POST, body: .stream, use: create)
     }
     
-    func queryLatest(req: Request) async throws -> AppPackageModel {
-        let baseURL = req.baseURLFromForwarded(app: app)
-        return AppPackageModel(items: try await app.appSvc.queryLatestPackages().map {
-            try AppPackageModel.Item(dbItem: $0, svc: app.appSvc, baseURL: baseURL)
-        })
-    }
-    
-    func getManifest(req: Request) async throws -> Response {
+    func get(req: Request) async throws -> AppPackageModel.Item {
         guard let idString = req.parameters.get("id") else {
             throw Abort(.badRequest, reason: "missing app package id")
         }
         guard let id = UUID(uuidString: idString) else {
             throw Abort(.badRequest, reason: "wrong id format: \(idString)")
         }
-        guard let plist = try await app.appSvc.getPackageManifestXml(id: id, baseURL: req.baseURLFromForwarded(app: app)) else {
+        guard let item = try await app.appSvc.getPackage(id: id)?.mapToModel(req: req) else {
             throw Abort(.notFound)
         }
-        let body = Response.Body(data: plist)
-        let response = Response(status: .ok, body: body)
-        response.headers.contentDisposition = .init(.attachment, filename: "manifest.plist")
-        response.headers.contentType = .xml
-        return response
+        return item
+    }
+    
+    func query(req: Request) async throws -> AppPackageModel {
+        let query = try req.query.decode(AppPackageModel.Query.self)
+        guard let id = UUID(uuidString: query.appId) else {
+            throw Abort(.badRequest, reason: "wrong appId format: \(query.appId)")
+        }
+        return try await app.appSvc.queryPackages(appId: id).mapToModel(req: req)
     }
     
     func create(req: Request) async throws -> HTTPStatus {
@@ -78,12 +78,38 @@ struct AppPackageController: RouteCollection {
         try await app.appSvc.createPackage(accessToken: token, content: content, tempFileURL: tempURL)
         return .created
     }
+    
+    func queryLatest(req: Request) async throws -> AppPackageModel {
+        try await app.appSvc.queryLatestPackages().mapToModel(req: req)
+    }
+    
+    func getManifest(req: Request) async throws -> Response {
+        guard let idString = req.parameters.get("id") else {
+            throw Abort(.badRequest, reason: "missing app package id")
+        }
+        guard let id = UUID(uuidString: idString) else {
+            throw Abort(.badRequest, reason: "wrong id format: \(idString)")
+        }
+        guard let plist = try await app.appSvc.getPackageManifestXml(id: id, baseURL: req.baseURLFromForwarded(app: app)) else {
+            throw Abort(.notFound)
+        }
+        let body = Response.Body(data: plist)
+        let response = Response(status: .ok, body: body)
+        response.headers.contentDisposition = .init(.attachment, filename: "manifest.plist")
+        response.headers.contentType = .xml
+        return response
+    }
 }
 
 struct AppPackageModel: Content {
     
+    struct Query: Content {
+        let appId: String
+    }
+    
     struct Item: Content {
         let id: String
+        let appId: String
         let url: String
         let title: String
         let content: String
@@ -96,4 +122,25 @@ struct AppPackageModel: Content {
     }
     
     let items: [Item]
+}
+
+private extension Sequence where Element == AppPackage {
+    
+    func mapToModel(req: Request) throws -> AppPackageModel {
+        let svc = req.application.appSvc
+        let baseURL = req.baseURLFromForwarded(app: req.application)
+        return AppPackageModel(items: try self.map {
+            try AppPackageModel.Item(dbItem: $0, svc: svc, baseURL: baseURL)
+        })
+    }
+}
+
+private extension AppPackage {
+    
+    func mapToModel(req: Request) throws -> AppPackageModel.Item {
+        try AppPackageModel.Item(
+            dbItem: self,
+            svc: req.application.appSvc,
+            baseURL: req.baseURLFromForwarded(app: req.application))
+    }
 }
