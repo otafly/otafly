@@ -97,7 +97,7 @@ private class FormPartTextResolver: FormPartResolver {
     }
     
     func finish(headers: HTTPHeaders) async throws -> (String, FormDataValue) {
-        (name, .text(data.readString(length: data.readableBytes)))
+        (name, .text(data.readString(length: data.readableBytes)?.urlDecoded))
     }
 }
 

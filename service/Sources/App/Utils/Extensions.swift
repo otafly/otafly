@@ -28,4 +28,8 @@ extension String {
     var searchRange: NSRange {
         .init(location: .zero, length: (self as NSString).length)
     }
+    
+    var urlDecoded: String? {
+        replacingOccurrences(of: "+", with: "%20").removingPercentEncoding
+    }
 }
