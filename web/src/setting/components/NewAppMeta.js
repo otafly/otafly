@@ -16,7 +16,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import * as api from "./api";
+import * as api from "../../api";
 
 export default function NewAppMeta({ onSubmit }) {
   const [open, setOpen] = useState(false);

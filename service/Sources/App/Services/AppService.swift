@@ -84,6 +84,16 @@ class AppService {
         return try PropertyListSerialization.data(fromPropertyList: plistDict, format: .xml, options: 0)
     }
     
+    func getInstallURL(package: AppPackage, baseURL: String) throws -> String {
+        switch package.platform {
+        case .ios:
+            let id = try package.requireID().uuidString
+            return "itms-services://?action=download-manifest&url=\(baseURL)/api/app/package/\(id)/manifest"
+        case .android:
+            return baseURL + storage.relativeUrl(id: try package.fileId())
+        }
+    }
+    
     private func cleanup(tempFileURL: URL) {
         do {
             if FileManager.default.fileExists(atPath: tempFileURL.path) {
@@ -110,7 +120,7 @@ extension AppMetaModel.Item {
 
 extension AppPackageModel.Item {
     
-    init(dbItem: AppPackage) throws {
+    init(dbItem: AppPackage, svc: AppService, baseURL: String) throws {
         id = try dbItem.requireID().uuidString
         title = dbItem.title
         content = dbItem.content
@@ -120,5 +130,6 @@ extension AppPackageModel.Item {
         appBuild = dbItem.appBuild
         createdAt = dbItem.createdAt ?? Date(timeIntervalSince1970: 0)
         updatedAt = dbItem.updatedAt ?? createdAt
+        url = try svc.getInstallURL(package: dbItem, baseURL: baseURL)
     }
 }

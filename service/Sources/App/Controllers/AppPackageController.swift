@@ -17,7 +17,10 @@ struct AppPackageController: RouteCollection {
     }
     
     func queryLatest(req: Request) async throws -> AppPackageModel {
-        .init(items: try await app.appSvc.queryLatestPackages().map(AppPackageModel.Item.init(dbItem:)))
+        let baseURL = req.baseURLFromForwarded(app: app)
+        return AppPackageModel(items: try await app.appSvc.queryLatestPackages().map {
+            try AppPackageModel.Item(dbItem: $0, svc: app.appSvc, baseURL: baseURL)
+        })
     }
     
     func getManifest(req: Request) async throws -> Response {
@@ -81,6 +84,7 @@ struct AppPackageModel: Content {
     
     struct Item: Content {
         let id: String
+        let url: String
         let title: String
         let content: String
         let platform: Platform

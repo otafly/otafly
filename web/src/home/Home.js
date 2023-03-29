@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Container } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Container, List } from "@mui/material";
 import { Link } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BannerIcon from "./components/BannerIcon";
-import List from '@mui/material/List';
 import HomePackageItem from "./components/HomePackageItem";
-
 import * as api from "../api";
 
 export default function Home({ reload }) {
@@ -19,9 +17,11 @@ export default function Home({ reload }) {
     fetchData();
   }, [reload]);
 
-  const packageItems = data ? data.items.map((item, index) => (
-    <HomePackageItem key={index} item={item} />
-  )) : null
+  const packageItems = data
+    ? data.items.map((item, index) => (
+        <HomePackageItem key={index} item={item} />
+      ))
+    : null;
 
   return (
     <div>
@@ -35,9 +35,7 @@ export default function Home({ reload }) {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <List>
-        {packageItems}
-      </List>
+      <List>{packageItems}</List>
     </div>
   );
 }

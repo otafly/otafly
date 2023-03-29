@@ -5,7 +5,7 @@ import Vapor
 // configures your application
 public func configure(_ app: Application) throws {
 #if DEBUG
-    app.middleware.use(CorsMiddleware())
+    app.setupCors()
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 #endif
     
@@ -39,18 +39,6 @@ extension Application {
     var appSvc: AppService {
         singleton.create {
             AppService(app: self)
-        }
-    }
-}
-
-private class CorsMiddleware: Middleware {
-    
-    func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
-        next.respond(to: request).map { response in
-            response.headers.add(name: "Access-Control-Allow-Origin", value: "*")
-            response.headers.add(name: "Access-Control-Allow-Headers", value: "Content-Type")
-            response.headers.add(name: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS")
-            return response
         }
     }
 }

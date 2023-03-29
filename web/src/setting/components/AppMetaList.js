@@ -9,7 +9,7 @@ import {
   CardActionArea,
   Box,
 } from "@mui/material";
-import * as api from "./api";
+import * as api from "../../api";
 
 export default function AppMetaList({ reload }) {
   const [data, setData] = useState(null);
