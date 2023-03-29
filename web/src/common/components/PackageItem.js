@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "@mui/material/styles";
 import {
   IconButton,
   ListItem,
@@ -21,6 +22,7 @@ import { formatDate } from "../util";
 
 export default function PackageItem({ item, showMore = true }) {
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleDownloadClick = () => {
     const downloadLink = document.createElement('a');
@@ -47,9 +49,9 @@ export default function PackageItem({ item, showMore = true }) {
         alignItems="flex-start"
         secondaryAction={
           <React.Fragment>
-
             <IconButton
               edge="end"
+              sx={{ color: theme.palette.primary.main }}
               onClick={handleClickExpand}
             >
               {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -57,7 +59,7 @@ export default function PackageItem({ item, showMore = true }) {
 
             <IconButton
               edge="end"
-              sx={{ marginLeft: "12px" }}
+              sx={{ marginLeft: "12px", color: theme.palette.primary.main }}
               onClick={handleDownloadClick}
             >
               <DownloadIcon />
@@ -65,7 +67,7 @@ export default function PackageItem({ item, showMore = true }) {
             {showMore && (
               <IconButton
                 edge="end"
-                sx={{ marginLeft: "12px" }}
+                sx={{ marginLeft: "12px", color: theme.palette.primary.main }}
                 onClick={handleMoreClick}>
                 <MoreIcon />
               </IconButton>
@@ -74,19 +76,27 @@ export default function PackageItem({ item, showMore = true }) {
         }
       >
         <ListItemAvatar>
-          <Avatar>
+          <Avatar sx={{ backgroundColor: theme.palette.primary.main }}>
             {item.platform === "android" ? <AndroidIcon /> : <AppleIcon />}
           </Avatar>
         </ListItemAvatar>
         <ListItemText
-          primary={item.title}
+          primary={<Typography
+            sx={{ display: "inline", fontWeight: 'bold' }}
+            component="span"
+            variant="title"
+            color={theme.palette.textPrimary.main}
+          >
+            {`${item.title}`}
+          </Typography>}
+          sx={{ color: theme.palette.textPrimary.main }}
           secondary={
             <React.Fragment>
               <Typography
                 sx={{ display: "inline" }}
                 component="span"
                 variant="body2"
-                color="text.secondary"
+                color={theme.palette.textSecondary.main}
               >
                 {`${item.appVersion}(${item.appBuild})`}
               </Typography>
@@ -95,7 +105,7 @@ export default function PackageItem({ item, showMore = true }) {
                 sx={{ display: "inline" }}
                 component="span"
                 variant="body2"
-                color="text.blueGrey"
+                color={theme.palette.textSecondary.main}
               >
                 {formatDate(item.createdAt)}
               </Typography>
@@ -104,7 +114,7 @@ export default function PackageItem({ item, showMore = true }) {
                   sx={{ display: "inline" }}
                   component="span"
                   variant="body3"
-                  color="text.blueGrey"
+                  color={theme.palette.textSecondary.main}
                 >
                   <br />
                   {item.content}
@@ -115,6 +125,6 @@ export default function PackageItem({ item, showMore = true }) {
         />
       </ListItem>
       <Divider variant="inset" component="li" />
-    </div>
+    </div >
   );
 }
