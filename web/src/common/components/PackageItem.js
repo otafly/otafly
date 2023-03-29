@@ -23,10 +23,17 @@ export default function PackageItem({ item, showMore = true }) {
   const navigate = useNavigate();
 
   const handleDownloadClick = () => {
-    console.log("download");
+    const downloadLink = document.createElement('a');
+    downloadLink.href = item.url;
+    downloadLink.download = item.title;
+    downloadLink.style.display = 'none';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   };
+
   const handleMoreClick = () => {
-    navigate(`/view/package-list/${item.title}/${item.id}`);
+    navigate(`/view/package-list/${item.title}/${item.appId}`);
   };
 
   const [open, setOpen] = React.useState(false);

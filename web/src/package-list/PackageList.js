@@ -24,7 +24,7 @@ export default function PackageList({ reload }) {
 
     const packageItems = data
         ? data.items.map((item, index) => (
-            <PackageItem key={index} item={item} />
+            <PackageItem key={index} item={item} showMore={false} />
         ))
         : null;
 
