@@ -16,7 +16,6 @@ mkdir "$PUB_DIR"
 
 mv service/Public "$PUB_DIR/Public"
 mv service/.build/release/Run "$PUB_DIR/Run"
-mv service/.build/release/Run.dSYM "$PUB_DIR/Run.dSYM"
 
 mkdir -p "$PUB_DIR"
 cp -rf "$PUB_DIR/*" "$DEST_DIR"
