@@ -33,7 +33,7 @@ export default function PackageItem({ item, showMore = true }) {
   };
 
   const handleMoreClick = () => {
-    navigate(`/view/package-list/${item.title}/${item.appId}`);
+    navigate(`/view/package/${item.title}/${item.appId}`);
   };
 
   const [open, setOpen] = React.useState(false);
