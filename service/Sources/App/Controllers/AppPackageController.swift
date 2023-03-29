@@ -5,6 +5,13 @@ import MultipartKit
 struct AppPackageController: RouteCollection {
     
     let app: Application
+    let formResolver: FormDataResolver
+    
+    init(app: Application) {
+        self.app = app
+        let baseDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".otafly")
+        formResolver = FormDataResolver(tempDir: baseDir.appendingPathComponent("temp"))
+    }
     
     func boot(routes: RoutesBuilder) throws {
         let packages = routes.grouped("api", "app", "packages")
@@ -41,16 +48,11 @@ struct AppPackageController: RouteCollection {
     }
     
     func create(req: Request) async throws -> HTTPStatus {
-        guard let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
-            throw Abort(.internalServerError, reason: "cachesDirectory not found")
-        }
-        let resolver = FormDataResolver(cacheURL: cacheURL.appendingPathComponent("otafly"))
-        
         var token: String?
         var content: String?
         var tempURL: URL?
         
-        for try await (name, value) in try await resolver.resolve(req: req) {
+        for try await (name, value) in try await formResolver.resolve(req: req) {
             switch value {
             case .text(let value):
                 switch name {

@@ -11,11 +11,15 @@ enum FormDataValue {
 
 class FormDataResolver {
     
-    private let cacheURL: URL
+    private let tempDir: URL
     
-    init(cacheURL: URL) {
-        self.cacheURL = cacheURL
-        try! FileManager.default.createDirectory(at: cacheURL, withIntermediateDirectories: true, attributes: nil)
+    init(tempDir: URL) {
+        self.tempDir = tempDir
+        do {
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            fatalError("failed to create tempDir:\(tempDir) error:\(error)")
+        }
     }
     
     func resolve(req: Request) async throws -> AsyncThrowingStream<(String, FormDataValue), Error> {
@@ -42,7 +46,7 @@ class FormDataResolver {
                 }
                 let resolver: FormPartResolver
                 if headers.isFile {
-                    let tempURL = self.cacheURL.appendingPathComponent(UUID().uuidString, isDirectory: false)
+                    let tempURL = tempDir.appendingPathComponent(UUID().uuidString, isDirectory: false)
                     resolver = FormPartFileResolver(eventLoop: req.eventLoop, name: name, tempFileURL: tempURL)
                 } else {
                     resolver = FormPartTextResolver(name)
