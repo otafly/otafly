@@ -10,6 +10,7 @@ import {
   Divider,
   Avatar,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import MoreIcon from "@mui/icons-material/MoreHoriz";
@@ -17,7 +18,8 @@ import AndroidIcon from "@mui/icons-material/Android";
 import AppleIcon from "@mui/icons-material/Apple";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
+import CommitIcon from "@mui/icons-material/Commit";
+import UpdateIcon from "@mui/icons-material/Update";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../util";
 
@@ -64,35 +66,54 @@ export default function PackageItem({ item, showMore = true }) {
         </ListItemAvatar>
         <ListItemText
           primary={
-            <Typography
-              sx={{ display: "inline", fontWeight: "bold" }}
-              component="span"
-              variant="title"
-              color={theme.palette.textPrimary.main}
-            >
-              {`${item.title}`}
-            </Typography>
+            <div>
+              <Typography
+                sx={{ display: "inline", fontWeight: "bold" }}
+                component="span"
+                variant="title"
+                color={theme.palette.textPrimary.main}
+              >
+                {`${item.title}`}
+              </Typography>
+              <Typography
+                sx={{ display: "inline", paddingLeft: 1 }}
+                component="span"
+                variant="body2"
+                color={theme.palette.textSecondary.main}
+              >
+                {`${item.appVersion} (${item.appBuild})`}
+              </Typography>
+            </div>
           }
           sx={{ color: theme.palette.textPrimary.main }}
           secondary={
             <React.Fragment>
-              <Typography
-                sx={{ display: "inline" }}
-                component="span"
-                variant="body2"
-                color={theme.palette.textSecondary.main}
-              >
-                {`${item.appVersion}(${item.appBuild})`}
-              </Typography>
-              <br />
-              <Typography
-                sx={{ display: "inline" }}
-                component="span"
-                variant="body2"
-                color={theme.palette.textSecondary.main}
-              >
-                {formatDate(item.createdAt)}
-              </Typography>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Tooltip title="Commit Time">
+                  <CommitIcon sx={{ padding: 0.3 }} />
+                </Tooltip>
+                <Typography
+                  sx={{ display: "inline" }}
+                  component="span"
+                  variant="body2"
+                  color={theme.palette.textSecondary.main}
+                >
+                  {formatDate(item.authorAt)}
+                </Typography>
+              </div>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Tooltip title="Upload Time">
+                  <UpdateIcon sx={{ padding: 0.3 }} />
+                </Tooltip>
+                <Typography
+                  sx={{ display: "inline" }}
+                  component="span"
+                  variant="body2"
+                  color={theme.palette.textSecondary.main}
+                >
+                  {formatDate(item.updatedAt)}
+                </Typography>
+              </div>
               <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <Paper
                   elevation={0}
