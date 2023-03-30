@@ -5,7 +5,10 @@ export async function getLatestPackages() {
 }
 
 export async function getPackage(id) {
-  return await request(config.api_endpoint + "/app/packages?appId=" + id, "GET");
+  return await request(
+    config.api_endpoint + "/app/packages?appId=" + id,
+    "GET"
+  );
 }
 
 export async function createAppMeta(meta) {

@@ -41,20 +41,24 @@ export default function PackageItem({ item, showMore = true }) {
   };
 
   const handleToggleExpand = (event) => {
-    if (event.target.closest("button.download-btn") || event.target.closest("button.more-btn")) {
+    if (
+      event.target.closest("button.download-btn") ||
+      event.target.closest("button.more-btn")
+    ) {
       return;
     }
     setExpanded(!expanded);
   };
-
   return (
     <div>
       <ListItem onClick={handleToggleExpand} alignItems="flex-start">
         <ListItemAvatar>
-          <Avatar sx={{
-            color: theme.palette.iconPrimary.main,
-            backgroundColor: theme.palette.iconFill.main
-          }}>
+          <Avatar
+            sx={{
+              color: theme.palette.iconPrimary.main,
+              backgroundColor: theme.palette.iconFill.main,
+            }}
+          >
             {item.platform === "android" ? <AndroidIcon /> : <AppleIcon />}
           </Avatar>
         </ListItemAvatar>
@@ -94,13 +98,22 @@ export default function PackageItem({ item, showMore = true }) {
                   elevation={0}
                   sx={{
                     marginRight: "auto",
-                    maxWidth: "60%",
                   }}
                 >
-                  <Typography component="span" variant="body3" color={theme.palette.textSecondary.main}>
+                  <div>
                     <br />
-                    {item.content}
-                  </Typography>
+                    {item.content.split("\\n").map((line, index) => (
+                      <Typography
+                        key={index}
+                        component="p"
+                        variant="body3"
+                        color={theme.palette.textSecondary.main}
+                        sx={{ margin: 0 }}
+                      >
+                        {line}
+                      </Typography>
+                    ))}
+                  </div>
                 </Paper>
               </Collapse>
             </React.Fragment>
