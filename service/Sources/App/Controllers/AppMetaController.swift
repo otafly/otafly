@@ -15,7 +15,9 @@ struct AppMetaController: RouteCollection {
     }
     
     func query(req: Request) async throws -> AppMetaModel {
-        try await .init(items: app.appSvc.queryMeta().map(AppMetaModel.Item.init(dbItem:)))
+        try await .init(items: app.appSvc.queryMeta().map {
+            try .init(dbItem: $0, isAdmin: true)
+        })
     }
     
     func get(req: Request) async throws -> AppMetaModel.Item {

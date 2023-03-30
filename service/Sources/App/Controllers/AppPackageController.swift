@@ -44,7 +44,10 @@ struct AppPackageController: RouteCollection {
         guard let id = UUID(uuidString: query.appId) else {
             throw Abort(.badRequest, reason: "wrong appId format: \(query.appId)")
         }
-        return try await app.appSvc.queryPackages(appId: id).mapToModel(req: req)
+        async let appTask = app.appSvc.getMeta(id: id)
+        async let packagesTask = app.appSvc.queryPackages(appId: id)
+        let (appMeta, packages) = try await (appTask, packagesTask)
+        return try packages.mapToModel(req: req, appMeta: appMeta)
     }
     
     func create(req: Request) async throws -> HTTPStatus {
@@ -124,23 +127,30 @@ struct AppPackageModel: Content {
     }
     
     let items: [Item]
+    
+    let app: AppMetaModel.Item?
 }
 
 private extension Sequence where Element == AppPackage {
     
-    func mapToModel(req: Request) throws -> AppPackageModel {
+    func mapToModel(req: Request, appMeta: AppMeta? = nil) throws -> AppPackageModel {
         let svc = req.application.appSvc
         let baseURL = req.baseURLFromForwarded(app: req.application)
-        return AppPackageModel(items: try self.map {
-            try AppPackageModel.Item(dbItem: $0, svc: svc, baseURL: baseURL)
-        })
+        let isAdmin = req.auth.has(User.self)
+        return .init(
+            items: try map {
+                try .init(dbItem: $0, svc: svc, baseURL: baseURL)
+            },
+            app: try appMeta.map {
+                try .init(dbItem: $0, isAdmin: isAdmin)
+            })
     }
 }
 
 private extension AppPackage {
     
     func mapToModel(req: Request) throws -> AppPackageModel.Item {
-        try AppPackageModel.Item(
+        try .init(
             dbItem: self,
             svc: req.application.appSvc,
             baseURL: req.baseURLFromForwarded(app: req.application))

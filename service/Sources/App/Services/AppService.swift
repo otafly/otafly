@@ -119,12 +119,12 @@ class AppService {
 
 extension AppMetaModel.Item {
     
-    init(dbItem: AppMeta) throws {
+    init(dbItem: AppMeta, isAdmin: Bool = false) throws {
         id = try dbItem.requireID().uuidString
         title = dbItem.title
         content = dbItem.content
         platform = dbItem.platform
-        accessToken = dbItem.accessToken
+        accessToken = isAdmin ? dbItem.accessToken : ""
         createdAt = dbItem.createdAt ?? Date(timeIntervalSince1970: 0)
         updatedAt = dbItem.updatedAt ?? createdAt
     }
