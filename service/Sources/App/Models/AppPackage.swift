@@ -33,6 +33,9 @@ final class AppPackage: Model, Content {
     @Field(key: "app_build")
     var appBuild: String
     
+    @Field(key: "app_display_name")
+    var appDisplayName: String
+    
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
@@ -50,6 +53,7 @@ final class AppPackage: Model, Content {
         self.appBundleId = info.bundleId
         self.appVersion = info.version
         self.appBuild = info.build
+        self.appDisplayName = (info.name ?? appMeta.title.replacingOccurrences(of: " ", with: "")) + platform.packageExtension
     }
 }
 
@@ -57,5 +61,15 @@ extension AppPackage {
     
     var appId: UUID {
         $appMeta.id
+    }
+}
+
+private extension Platform {
+
+    var packageExtension: String {
+        switch self {
+        case .ios: return ".ipa"
+        case .android: return ".apk"
+        }
     }
 }

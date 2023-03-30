@@ -51,3 +51,10 @@ extension NonBlockingFileIO {
         return NonBlockingFileIO(threadPool: pool)
     }()
 }
+
+extension Application {
+    
+    var baseDir: URL {
+        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".otafly")
+    }
+}

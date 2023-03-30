@@ -16,6 +16,7 @@ struct PackageInfo {
     let bundleId: String
     let version: String
     let build: String
+    let name: String?
 }
 
 extension Platform {
@@ -42,10 +43,11 @@ class IOSPackageResolver: PackageResolver {
         guard let dict = try PropertyListSerialization.propertyList(from: plistData, format: nil) as? NSDictionary else {
             throw Abort(.badRequest, reason: "Info.plist data is wrong")
         }
+        let name = dict["CFBundleDisplayName"] as? String
         guard let bundleId = dict["CFBundleIdentifier"] as? String else { throw Abort(.badRequest) }
         guard let version = dict["CFBundleShortVersionString"] as? String else { throw Abort(.badRequest) }
         guard let build = dict["CFBundleVersion"] as? String else { throw Abort(.badRequest) }
-        return PackageInfo(bundleId: bundleId, version: version, build: build)
+        return PackageInfo(bundleId: bundleId, version: version, build: build, name: name)
     }
 }
 
@@ -81,8 +83,7 @@ class AndroidPackageResolver: PackageResolver {
         else {
             throw Abort(.badRequest, reason: "version or build not found")
         }
-        
-        return PackageInfo(bundleId: bundleId, version: versionName, build: versionCode)
+        return PackageInfo(bundleId: bundleId, version: versionName, build: versionCode, name: nil)
     }
     
     private func findFilePath(name: String) -> String? {

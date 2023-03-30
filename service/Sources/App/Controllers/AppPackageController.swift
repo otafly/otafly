@@ -7,10 +7,11 @@ struct AppPackageController: RouteCollection {
     let app: Application
     let formResolver: FormDataResolver
     
+    var storage: FileStorage { app.appSvc.storage }
+    
     init(app: Application) {
         self.app = app
-        let baseDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".otafly")
-        formResolver = FormDataResolver(tempDir: baseDir.appendingPathComponent("temp"))
+        formResolver = FormDataResolver(tempDir: app.baseDir.appendingPathComponent("temp"))
     }
     
     func boot(routes: RoutesBuilder) throws {
@@ -22,6 +23,7 @@ struct AppPackageController: RouteCollection {
         package.group(":id") { package in
             package.get(use: get)
             package.get("manifest", use: getManifest)
+            package.get("download", use: download)
         }
         package.on(.POST, body: .stream, use: create)
     }
@@ -103,6 +105,21 @@ struct AppPackageController: RouteCollection {
         response.headers.contentDisposition = .init(.attachment, filename: "manifest.plist")
         response.headers.contentType = .xml
         return response
+    }
+    
+    func download(req: Request) async throws -> Response {
+        guard let idString = req.parameters.get("id") else {
+            throw Abort(.badRequest, reason: "missing app package id")
+        }
+        guard let id = UUID(uuidString: idString) else {
+            throw Abort(.badRequest, reason: "wrong id format: \(idString)")
+        }
+        guard let package = try await app.appSvc.getPackage(id: id) else {
+            throw Abort(.notFound)
+        }
+        let resp = req.fileio.streamFile(at: storage.localUrlFor(id: idString).path, mediaType: .binary)
+        resp.headers.contentDisposition = .init(.attachment, filename: package.appDisplayName)
+        return resp
     }
 }
 

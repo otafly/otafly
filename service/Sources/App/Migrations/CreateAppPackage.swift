@@ -10,6 +10,7 @@ struct CreateAppPackage: AsyncMigration {
             .field("app_bundle_id", .string, .required)
             .field("app_version", .string, .required)
             .field("app_build", .string, .required)
+            .field("app_display_name", .string, .required)
             .field("platform", .enum(.init(name: "Platform", cases: Platform.allCases.map(\.rawValue))), .required)
             .field("created_at", .datetime)
             .field("updated_at", .datetime)

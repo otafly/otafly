@@ -10,7 +10,7 @@ class AppService {
     
     init(app: Application) {
         self.app = app
-        storage = FileStorage(name: "packages", dir: app.directory.publicDirectory)
+        storage = FileStorage(packageDir: app.baseDir.appendingPathComponent("packages"))
     }
     
     func queryMeta() async throws -> [AppMeta] {
@@ -66,14 +66,14 @@ class AppService {
         }
         let info = try meta.platform.packageResolver.extract(tempFileURL)
         let package = try AppPackage(id: UUID(), appMeta: meta, info: info, content: content)
-        let dest = storage.localUrlFor(id: try package.fileId())
+        let dest = storage.localUrlFor(id: try package.requireID().uuidString)
         try FileManager.default.moveItem(at: tempFileURL, to: dest)
         try await package.save(on: app.db)
     }
     
     func getPackageManifestXml(id: UUID, baseURL: String) async throws -> Data? {
         guard let package = try await AppPackage.find(id, on: app.db) else { return nil }
-        let url = baseURL + storage.relativeUrl(id: try package.fileId())
+        let url = baseURL + storage.relativeUrl(id: try package.requireID().uuidString)
         
         let plistDict: [String: Any] = [
             "items": [
@@ -88,7 +88,7 @@ class AppService {
                         "bundle-identifier": package.appBundleId,
                         "bundle-version": "\(package.appVersion) (\(package.appBuild))",
                         "kind": "software",
-                        "title": "Panda"
+                        "title": package.title
                     ]
                 ]
             ]
@@ -102,7 +102,7 @@ class AppService {
             let id = try package.requireID().uuidString
             return "itms-services://?action=download-manifest&url=\(baseURL)/api/app/package/\(id)/manifest"
         case .android:
-            return baseURL + storage.relativeUrl(id: try package.fileId())
+            return baseURL + storage.relativeUrl(id: try package.requireID().uuidString)
         }
     }
     
