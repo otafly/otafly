@@ -18,8 +18,8 @@ export default function Home({ reload }) {
 
   const packageItems = data
     ? data.items.map((item, index) => (
-        <PackageItem key={index} item={item} showMore={true} />
-      ))
+      <PackageItem key={index} item={item} showMore={true} />
+    ))
     : null;
 
   return (

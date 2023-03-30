@@ -5,16 +5,22 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     background: {
-      default: "#EEEEEE",
+      default: "#FFFFFF",
     },
     primary: {
-      main: "#658864",
+      main: "#F2F2F2",
     },
     secondary: {
       main: "#19857b",
     },
+    iconPrimary: {
+      main: '#5C5C5C'
+    },
+    iconFill: {
+      main: '#F5F5F5'
+    },
     textPrimary: {
-      main: "#292524",
+      main: "#5C5C5C",
     },
     textSecondary: {
       main: "#78716c",

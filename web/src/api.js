@@ -5,9 +5,7 @@ export async function getLatestPackages() {
 }
 
 export async function getPackage(id) {
-  const url = new URL(config.api_endpoint + "/app/packages/");
-  url.searchParams.append("appId", id);
-  return await request(url.toString(), "GET");
+  return await request(config.api_endpoint + "/app/packages?appId=" + id, "GET");
 }
 
 export async function createAppMeta(meta) {
