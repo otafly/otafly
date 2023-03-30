@@ -10,7 +10,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/view/setting" element={<Setting />} />
-        <Route path="/view/package/:title/:id" element={<PackageList />} />
+        <Route path="/view/package/:id" element={<PackageList />} />
       </Routes>
     </BrowserRouter>
   );

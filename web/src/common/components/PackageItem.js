@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import {
+  Paper,
   IconButton,
   ListItem,
   ListItemAvatar,
@@ -21,8 +22,9 @@ import { useNavigate } from "react-router-dom";
 import { formatDate } from "../util";
 
 export default function PackageItem({ item, showMore = true }) {
-  const navigate = useNavigate();
   const theme = useTheme();
+  const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
 
   const handleDownloadClick = () => {
     const downloadLink = document.createElement("a");
@@ -35,49 +37,24 @@ export default function PackageItem({ item, showMore = true }) {
   };
 
   const handleMoreClick = () => {
-    navigate(`/view/package/${item.title}/${item.appId}`);
+    navigate(`/view/package/${item.appId}`);
   };
 
-  const [open, setOpen] = React.useState(false);
-  const handleClickExpand = () => {
-    setOpen(!open);
+  const handleToggleExpand = (event) => {
+    if (event.target.closest("button.download-btn") || event.target.closest("button.more-btn")) {
+      return;
+    }
+    setExpanded(!expanded);
   };
 
   return (
     <div>
-      <ListItem
-        alignItems="flex-start"
-        secondaryAction={
-          <React.Fragment>
-            <IconButton
-              edge="end"
-              sx={{ color: theme.palette.primary.main }}
-              onClick={handleClickExpand}
-            >
-              {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
-
-            <IconButton
-              edge="end"
-              sx={{ marginLeft: "12px", color: theme.palette.primary.main }}
-              onClick={handleDownloadClick}
-            >
-              <DownloadIcon />
-            </IconButton>
-            {showMore && (
-              <IconButton
-                edge="end"
-                sx={{ marginLeft: "12px", color: theme.palette.primary.main }}
-                onClick={handleMoreClick}
-              >
-                <MoreIcon />
-              </IconButton>
-            )}
-          </React.Fragment>
-        }
-      >
+      <ListItem onClick={handleToggleExpand} alignItems="flex-start">
         <ListItemAvatar>
-          <Avatar sx={{ backgroundColor: theme.palette.primary.main }}>
+          <Avatar sx={{
+            color: theme.palette.iconPrimary.main,
+            backgroundColor: theme.palette.iconFill.main
+          }}>
             {item.platform === "android" ? <AndroidIcon /> : <AppleIcon />}
           </Avatar>
         </ListItemAvatar>
@@ -112,20 +89,44 @@ export default function PackageItem({ item, showMore = true }) {
               >
                 {formatDate(item.createdAt)}
               </Typography>
-              <Collapse in={open} timeout="auto" unmountOnExit>
-                <Typography
-                  sx={{ display: "inline" }}
-                  component="span"
-                  variant="body3"
-                  color={theme.palette.textSecondary.main}
+              <Collapse in={expanded} timeout="auto" unmountOnExit>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    marginRight: "auto",
+                    maxWidth: "60%",
+                  }}
                 >
-                  <br />
-                  {item.content}
-                </Typography>
+                  <Typography component="span" variant="body3" color={theme.palette.textSecondary.main}>
+                    <br />
+                    {item.content}
+                  </Typography>
+                </Paper>
               </Collapse>
             </React.Fragment>
           }
         />
+        <IconButton edge="end" sx={{ color: theme.palette.iconPrimary.main }}>
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
+        <IconButton
+          edge="end"
+          sx={{ marginLeft: "12px", color: theme.palette.iconPrimary.main }}
+          onClick={handleDownloadClick}
+          className="download-btn"
+        >
+          <DownloadIcon />
+        </IconButton>
+        {showMore && (
+          <IconButton
+            edge="end"
+            sx={{ marginLeft: "12px", color: theme.palette.iconPrimary.main }}
+            onClick={handleMoreClick}
+            className="more-btn"
+          >
+            <MoreIcon />
+          </IconButton>
+        )}
       </ListItem>
       <Divider variant="inset" component="li" />
     </div>

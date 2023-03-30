@@ -37,6 +37,6 @@ export default function Setting() {
           <Login onSubmit={() => setReload(!reload)} />
         )}
       </Box>
-    </div>
+    </div >
   );
 }
