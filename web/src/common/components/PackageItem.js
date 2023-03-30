@@ -102,7 +102,7 @@ export default function PackageItem({ item, showMore = true }) {
                 >
                   <div>
                     <br />
-                    {item.content.split("\\n").map((line, index) => (
+                    {item.content.split("\n").map((line, index) => (
                       <Typography
                         key={index}
                         component="p"
