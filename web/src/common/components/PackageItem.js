@@ -46,7 +46,6 @@ export default function PackageItem({ item, showMore = true }) {
     }
     setExpanded(!expanded);
   };
-
   return (
     <div>
       <ListItem onClick={handleToggleExpand} alignItems="flex-start">
@@ -93,14 +92,23 @@ export default function PackageItem({ item, showMore = true }) {
                 <Paper
                   elevation={0}
                   sx={{
-                    marginRight: "auto",
-                    maxWidth: "60%",
+                    marginRight: "auto"
                   }}
                 >
-                  <Typography component="span" variant="body3" color={theme.palette.textSecondary.main}>
+                  <div>
                     <br />
-                    {item.content}
-                  </Typography>
+                    {item.content.split('\\n').map((line, index) => (
+                      <Typography
+                        key={index}
+                        component="p"
+                        variant="body3"
+                        color={theme.palette.textSecondary.main}
+                        sx={{ margin: 0 }}
+                      >
+                        {line}
+                      </Typography>
+                    ))}
+                  </div>
                 </Paper>
               </Collapse>
             </React.Fragment>
