@@ -46,18 +46,19 @@ class AppService {
         guard let sql = app.db as? SQLDatabase else {
             throw Abort(.internalServerError)
         }
-        return try await sql.raw("SELECT p.* FROM app_meta m INNER JOIN app_package p ON p.app_meta_id = m.id WHERE p.id = (SELECT id FROM app_package WHERE app_meta_id = m.id ORDER BY updated_at DESC LIMIT 1) ORDER BY p.updated_at DESC")
+        return try await sql.raw("SELECT p.* FROM app_meta m INNER JOIN app_package p ON p.app_meta_id = m.id WHERE p.id = (SELECT id FROM app_package WHERE app_meta_id = m.id ORDER BY updated_at DESC LIMIT 1) ORDER BY p.author_at DESC, p.updated_at DESC")
             .all(decoding: AppPackage.self)
     }
     
     func queryPackages(appId: UUID) async throws -> [AppPackage] {
         try await AppPackage.query(on: app.db)
             .filter(\.$appMeta.$id == appId)
+            .sort(\.$authorAt, .descending)
             .sort(\.$updatedAt, .descending)
             .all()
     }
     
-    func createPackage(accessToken: String, content: String?, tempFileURL: URL) async throws {
+    func createPackage(accessToken: String, content: String?, date: Date?, tempFileURL: URL) async throws {
         defer {
             cleanup(tempFileURL: tempFileURL)
         }
@@ -65,7 +66,7 @@ class AppService {
             throw Abort(.badRequest, reason: "invalid token")
         }
         let info = try meta.platform.packageResolver.extract(tempFileURL)
-        let package = try AppPackage(id: UUID(), appMeta: meta, info: info, content: content)
+        let package = try AppPackage(id: UUID(), appMeta: meta, info: info, content: content, authorAt: date)
         let dest = storage.localUrlFor(id: try package.requireID().uuidString)
         try FileManager.default.moveItem(at: tempFileURL, to: dest)
         try await package.save(on: app.db)
@@ -143,6 +144,7 @@ extension AppPackageModel.Item {
         appBuild = dbItem.appBuild
         createdAt = dbItem.createdAt ?? Date(timeIntervalSince1970: 0)
         updatedAt = dbItem.updatedAt ?? createdAt
+        authorAt = dbItem.authorAt ?? updatedAt
         url = try svc.getInstallURL(package: dbItem, baseURL: baseURL)
     }
 }

@@ -56,6 +56,7 @@ struct AppPackageController: RouteCollection {
         var token: String?
         var content: String?
         var tempURL: URL?
+        var date: Date?
         
         for try await (name, value) in try await formResolver.resolve(req: req) {
             switch value {
@@ -68,6 +69,10 @@ struct AppPackageController: RouteCollection {
                     token = value
                 case "content":
                     content = value
+                case "date":
+                    if let value, let interval = TimeInterval(value) {
+                        date = Date(timeIntervalSince1970: interval)
+                    }
                 default: continue
                 }
             case .file(let url):
@@ -82,7 +87,7 @@ struct AppPackageController: RouteCollection {
         guard let tempURL else {
             throw Abort(.badRequest, reason: "missing file")
         }
-        try await app.appSvc.createPackage(accessToken: token, content: content, tempFileURL: tempURL)
+        try await app.appSvc.createPackage(accessToken: token, content: content, date: date, tempFileURL: tempURL)
         return .created
     }
     
@@ -139,6 +144,7 @@ struct AppPackageModel: Content {
         let appBundleId: String
         let appVersion: String
         let appBuild: String
+        let authorAt: Date
         let createdAt: Date
         let updatedAt: Date
     }

@@ -8,6 +8,7 @@ struct WebRouteController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.get(use: index)
         routes.get("view", .anything, use: index)
+        routes.get("view", .anything, .anything, use: index)
     }
     
     func index(req: Request) -> Response {

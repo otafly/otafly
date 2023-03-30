@@ -36,6 +36,9 @@ final class AppPackage: Model, Content {
     @Field(key: "app_display_name")
     var appDisplayName: String
     
+    @Timestamp(key: "author_at", on: .none)
+    var authorAt: Date?
+    
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
@@ -44,7 +47,7 @@ final class AppPackage: Model, Content {
     
     init() { }
 
-    init(id: UUID? = nil, appMeta: AppMeta, info: PackageInfo, content: String?) throws {
+    init(id: UUID? = nil, appMeta: AppMeta, info: PackageInfo, content: String?, authorAt: Date?) throws {
         self.id = id
         self.$appMeta.id = try appMeta.requireID()
         self.title = appMeta.title
@@ -54,6 +57,7 @@ final class AppPackage: Model, Content {
         self.appVersion = info.version
         self.appBuild = info.build
         self.appDisplayName = (info.name ?? appMeta.title.replacingOccurrences(of: " ", with: "")) + platform.packageExtension
+        self.authorAt = authorAt ?? Date()
     }
 }
 
