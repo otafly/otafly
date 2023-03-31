@@ -84,6 +84,7 @@ export default function NewAppMeta({ onSubmit }) {
             label="Title"
             fullWidth
             variant="standard"
+            color="textPrimary"
             onChange={handleChange}
           />
           <TextField
@@ -94,6 +95,7 @@ export default function NewAppMeta({ onSubmit }) {
             variant="standard"
             multiline
             rows={4}
+            color="textPrimary"
             onChange={handleChange}
           />
           <Box
@@ -165,10 +167,10 @@ function PlatformSelector({ id, onChange, value, ...other }) {
       onChange={handleOnChange}
       {...other}
     >
-      <ToggleButton value="ios">
+      <ToggleButton color="iconPrimary" value="ios">
         <AppleIcon />
       </ToggleButton>
-      <ToggleButton value="android">
+      <ToggleButton color="iconPrimary" value="android">
         <AndroidIcon />
       </ToggleButton>
     </ToggleButtonGroup>

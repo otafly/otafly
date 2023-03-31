@@ -89,7 +89,7 @@ class AppService {
                         "bundle-identifier": package.appBundleId,
                         "bundle-version": "\(package.appVersion) (\(package.appBuild))",
                         "kind": "software",
-                        "title": package.title
+                        "title": package.appDisplayName
                     ]
                 ]
             ]

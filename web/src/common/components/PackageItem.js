@@ -4,13 +4,13 @@ import {
   Paper,
   IconButton,
   ListItem,
-  ListItemAvatar,
-  ListItemText,
   Collapse,
   Divider,
   Avatar,
   Typography,
   Tooltip,
+  Stack,
+  Box,
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import MoreIcon from "@mui/icons-material/MoreHoriz";
@@ -18,6 +18,7 @@ import AndroidIcon from "@mui/icons-material/Android";
 import AppleIcon from "@mui/icons-material/Apple";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ConstructionIcon from "@mui/icons-material/Construction";
 import CommitIcon from "@mui/icons-material/Commit";
 import UpdateIcon from "@mui/icons-material/Update";
 import { useNavigate } from "react-router-dom";
@@ -53,20 +54,18 @@ export default function PackageItem({ item, showMore = true }) {
   };
   return (
     <div>
-      <ListItem onClick={handleToggleExpand} alignItems="flex-start">
-        <ListItemAvatar>
-          <Avatar
-            sx={{
-              color: theme.palette.iconPrimary.main,
-              backgroundColor: theme.palette.iconFill.main,
-            }}
-          >
-            {item.platform === "android" ? <AndroidIcon /> : <AppleIcon />}
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText
-          primary={
-            <div>
+      <ListItem onClick={handleToggleExpand}>
+        <Stack sx={{ width: "100vw" }}>
+          <Stack direction="row" alignItems="flex-start" spacing={2}>
+            <Avatar
+              sx={{
+                color: theme.palette.iconPrimary.main,
+                backgroundColor: theme.palette.iconFill.main,
+              }}
+            >
+              {item.platform === "android" ? <AndroidIcon /> : <AppleIcon />}
+            </Avatar>
+            <Stack>
               <Typography
                 sx={{ display: "inline", fontWeight: "bold" }}
                 component="span"
@@ -75,20 +74,20 @@ export default function PackageItem({ item, showMore = true }) {
               >
                 {`${item.title}`}
               </Typography>
-              <Typography
-                sx={{ display: "inline", paddingLeft: 1 }}
-                component="span"
-                variant="body2"
-                color={theme.palette.textSecondary.main}
-              >
-                {`${item.appVersion} (${item.appBuild})`}
-              </Typography>
-            </div>
-          }
-          sx={{ color: theme.palette.textPrimary.main }}
-          secondary={
-            <React.Fragment>
-              <div style={{ display: "flex", alignItems: "center" }}>
+              <Stack direction="row" alignItems="center">
+                <Tooltip title="App Version">
+                  <ConstructionIcon sx={{ padding: 0.3 }} />
+                </Tooltip>
+                <Typography
+                  sx={{ display: "inline" }}
+                  component="span"
+                  variant="body2"
+                  color={theme.palette.textSecondary.main}
+                >
+                  {`${item.appVersion} (${item.appBuild})`}
+                </Typography>
+              </Stack>
+              <Stack direction="row" alignItems="center">
                 <Tooltip title="Commit Time">
                   <CommitIcon sx={{ padding: 0.3 }} />
                 </Tooltip>
@@ -100,10 +99,10 @@ export default function PackageItem({ item, showMore = true }) {
                 >
                   {formatDate(item.authorAt)}
                 </Typography>
-              </div>
-              <div style={{ display: "flex", alignItems: "center" }}>
+              </Stack>
+              <Stack direction="row" alignItems="center">
                 <Tooltip title="Upload Time">
-                  <UpdateIcon sx={{ padding: 0.3 }} />
+                  <UpdateIcon sx={{ padding: 0.5 }} />
                 </Tooltip>
                 <Typography
                   sx={{ display: "inline" }}
@@ -113,54 +112,65 @@ export default function PackageItem({ item, showMore = true }) {
                 >
                   {formatDate(item.updatedAt)}
                 </Typography>
-              </div>
-              <Collapse in={expanded} timeout="auto" unmountOnExit>
-                <Paper
-                  elevation={0}
+              </Stack>
+            </Stack>
+            <Box sx={{ flexGrow: 1 }} />
+            <Stack direction="row">
+              <IconButton
+                edge="end"
+                sx={{ color: theme.palette.iconPrimary.main }}
+              >
+                {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </IconButton>
+              <IconButton
+                edge="end"
+                sx={{
+                  marginLeft: "12px",
+                  color: theme.palette.iconPrimary.main,
+                }}
+                onClick={handleDownloadClick}
+                className="download-btn"
+              >
+                <DownloadIcon />
+              </IconButton>
+              {showMore && (
+                <IconButton
+                  edge="end"
                   sx={{
-                    marginRight: "auto",
+                    marginLeft: "12px",
+                    color: theme.palette.iconPrimary.main,
                   }}
+                  onClick={handleMoreClick}
+                  className="more-btn"
                 >
-                  <div>
-                    <br />
-                    {item.content.split("\n").map((line, index) => (
-                      <Typography
-                        key={index}
-                        component="p"
-                        variant="body3"
-                        color={theme.palette.textSecondary.main}
-                        sx={{ margin: 0 }}
-                      >
-                        {line}
-                      </Typography>
-                    ))}
-                  </div>
-                </Paper>
-              </Collapse>
-            </React.Fragment>
-          }
-        />
-        <IconButton edge="end" sx={{ color: theme.palette.iconPrimary.main }}>
-          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </IconButton>
-        <IconButton
-          edge="end"
-          sx={{ marginLeft: "12px", color: theme.palette.iconPrimary.main }}
-          onClick={handleDownloadClick}
-          className="download-btn"
-        >
-          <DownloadIcon />
-        </IconButton>
-        {showMore && (
-          <IconButton
-            edge="end"
-            sx={{ marginLeft: "12px", color: theme.palette.iconPrimary.main }}
-            onClick={handleMoreClick}
-            className="more-btn"
-          >
-            <MoreIcon />
-          </IconButton>
-        )}
+                  <MoreIcon />
+                </IconButton>
+              )}
+            </Stack>
+          </Stack>
+          <Collapse in={expanded} timeout="auto" unmountOnExit>
+            <Paper
+              elevation={0}
+              sx={{
+                marginRight: "auto",
+              }}
+            >
+              <Box margin={2}>
+                {item.content.split("\n").map((line, index) => (
+                  <Typography
+                    key={index}
+                    component="p"
+                    variant="body2"
+                    color={theme.palette.textSecondary.main}
+                    sx={{ margin: 0 }}
+                  >
+                    {line}
+                  </Typography>
+                ))}
+              </Box>
+            </Paper>
+          </Collapse>
+        </Stack>
       </ListItem>
       <Divider variant="inset" component="li" />
     </div>

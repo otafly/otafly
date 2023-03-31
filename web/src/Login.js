@@ -1,12 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
+import React, { useState } from "react";
+import { Button, TextField } from "@mui/material";
 import * as api from "./api";
 import { Stack } from "@mui/system";
 
@@ -32,31 +25,39 @@ export default function Login({ onSubmit }) {
     !username || username.trim() === "" || !password || password.trim() === "";
 
   return (
-    <Stack>
-      <TextField
-        autoFocus
-        margin="dense"
-        id="username"
-        label="Username"
-        fullWidth
-        variant="standard"
-        onChange={(event) => {
-          setUsername(event.target.value);
-        }}
-      />
-      <TextField
-        margin="dense"
-        id="password"
-        label="Password"
-        type="password"
-        autoComplete="current-password"
-        onChange={(event) => {
-          setPassword(event.target.value);
-        }}
-      />
-      <Button variant="contained" onClick={handleSubmit} disabled={isAnyEmpty}>
-        Login
-      </Button>
+    <Stack alignItems="center" marginTop={2}>
+      <Stack minWidth={400} spacing={2}>
+        <TextField
+          autoFocus
+          margin="dense"
+          id="username"
+          label="Username"
+          variant="standard"
+          color="textPrimary"
+          onChange={(event) => {
+            setUsername(event.target.value);
+          }}
+        />
+        <TextField
+          margin="dense"
+          id="password"
+          label="Password"
+          variant="standard"
+          type="password"
+          autoComplete="current-password"
+          color="textPrimary"
+          onChange={(event) => {
+            setPassword(event.target.value);
+          }}
+        />
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={isAnyEmpty}
+        >
+          Login
+        </Button>
+      </Stack>
     </Stack>
   );
 }

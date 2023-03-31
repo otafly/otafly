@@ -1,4 +1,3 @@
-import { red } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 
 // A custom theme for this app
@@ -14,10 +13,10 @@ const theme = createTheme({
       main: "#19857b",
     },
     iconPrimary: {
-      main: '#5C5C5C'
+      main: "#5C5C5C",
     },
     iconFill: {
-      main: '#F5F5F5'
+      main: "#F5F5F5",
     },
     textPrimary: {
       main: "#5C5C5C",

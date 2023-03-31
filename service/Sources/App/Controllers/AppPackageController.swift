@@ -123,7 +123,7 @@ struct AppPackageController: RouteCollection {
             throw Abort(.notFound)
         }
         let resp = req.fileio.streamFile(at: storage.localUrlFor(id: idString).path, mediaType: .binary)
-        resp.headers.contentDisposition = .init(.attachment, filename: package.appDisplayName)
+        resp.headers.contentDisposition = .init(.attachment, filename: package.appDisplayName + package.platform.packageExtension)
         return resp
     }
 }
@@ -177,5 +177,15 @@ private extension AppPackage {
             dbItem: self,
             svc: req.application.appSvc,
             baseURL: req.baseURLFromForwarded(app: req.application))
+    }
+}
+
+private extension Platform {
+
+    var packageExtension: String {
+        switch self {
+        case .ios: return ".ipa"
+        case .android: return ".apk"
+        }
     }
 }

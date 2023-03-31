@@ -56,7 +56,7 @@ final class AppPackage: Model, Content {
         self.appBundleId = info.bundleId
         self.appVersion = info.version
         self.appBuild = info.build
-        self.appDisplayName = (info.name ?? appMeta.title.replacingOccurrences(of: " ", with: "")) + platform.packageExtension
+        self.appDisplayName = info.name ?? appMeta.title.replacingOccurrences(of: " ", with: "")
         self.authorAt = authorAt ?? Date()
     }
 }
@@ -65,15 +65,5 @@ extension AppPackage {
     
     var appId: UUID {
         $appMeta.id
-    }
-}
-
-private extension Platform {
-
-    var packageExtension: String {
-        switch self {
-        case .ios: return ".ipa"
-        case .android: return ".apk"
-        }
     }
 }
