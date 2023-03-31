@@ -136,6 +136,10 @@ private class FormPartFileResolver: FormPartResolver {
         }.get()
         return (name, .file(tempFileURL))
     }
+    
+    deinit {
+        try? handler?.close()
+    }
 }
 
 private extension HTTPHeaders {
