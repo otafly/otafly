@@ -70,8 +70,12 @@ struct AppPackageController: RouteCollection {
                 case "content":
                     content = value
                 case "date":
-                    if let value, let interval = TimeInterval(value) {
-                        date = Date(timeIntervalSince1970: interval)
+                    if let value {
+                        if let interval = TimeInterval(value) {
+                            date = Date(timeIntervalSince1970: interval)
+                        } else {
+                            throw Abort(.badRequest, reason: "wrong format of date: \(value)")
+                        }
                     }
                 default: continue
                 }
