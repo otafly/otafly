@@ -46,7 +46,7 @@ class AppService {
         guard let sql = app.db as? SQLDatabase else {
             throw Abort(.internalServerError)
         }
-        return try await sql.raw("SELECT p.* FROM app_meta m INNER JOIN app_package p ON p.app_meta_id = m.id WHERE p.id = (SELECT id FROM app_package WHERE app_meta_id = m.id ORDER BY updated_at DESC LIMIT 1) ORDER BY p.author_at DESC, p.updated_at DESC")
+        return try await sql.raw("SELECT p.* FROM app_meta m INNER JOIN app_package p ON p.app_meta_id = m.id WHERE p.id = (SELECT id FROM app_package WHERE app_meta_id = m.id ORDER BY author_at DESC, updated_at DESC LIMIT 1) ORDER BY p.author_at DESC, p.updated_at DESC")
             .all(decoding: AppPackage.self)
     }
     
