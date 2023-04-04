@@ -25,8 +25,8 @@ export default function Login({ onSubmit }) {
     !username || username.trim() === "" || !password || password.trim() === "";
 
   return (
-    <Stack alignItems="center" marginTop={2}>
-      <Stack minWidth={400} spacing={2}>
+    <Stack alignItems="center">
+      <Stack width="100%" maxWidth={400} spacing={2} padding={2}>
         <TextField
           autoFocus
           margin="dense"

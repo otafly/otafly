@@ -20,4 +20,12 @@ class FileStorage {
     func relativeUrl(id: String) -> String {
         "/api/app/package/\(id)/download"
     }
+    
+    func prune(reserved ids: [String]) throws {
+        guard let enumerator = FileManager.default.enumerator(at: packageDir, includingPropertiesForKeys: nil, options: .skipsHiddenFiles) else { return }
+        try enumerator
+            .compactMap { $0 as? URL }
+            .filter { !ids.contains($0.lastPathComponent) }
+            .forEach { try FileManager.default.removeItem(at: $0) }
+    }
 }

@@ -26,7 +26,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateAppMeta(), CreateAppPackage())
     try app.autoMigrate().wait()
     
-    app.queues.schedule(CleanupJob()).hourly().at(0)
+    app.queues.schedule(CleanupJob()).daily().at(.midnight)
     try app.queues.startScheduledJobs()
     
     try routes(app)

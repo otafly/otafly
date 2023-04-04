@@ -107,6 +107,30 @@ class AppService {
         }
     }
     
+    func cleanupPackages(reserved: Int) async throws {
+        try await truncatePackages(reserved: reserved)
+        try await prunePackages()
+    }
+    
+    private func truncatePackages(reserved: Int) async throws {
+        let appMetas = try await AppMeta.query(on: app.db).all()
+        var reservedIds = [UUID]()
+        for appMeta in appMetas {
+            let ids = try await AppPackage.query(on: app.db)
+                .filter(\.$appMeta.$id == appMeta.requireID())
+                .sort(\.$updatedAt, .descending)
+                .limit(reserved)
+                .all(\.$id)
+            reservedIds.append(contentsOf: ids)
+        }
+        try await AppPackage.query(on: app.db).filter(\.$id !~ reservedIds).delete(force: true)
+    }
+    
+    private func prunePackages() async throws {
+        let ids = try await AppPackage.query(on: app.db).all(\.$id)
+        try storage.prune(reserved: ids.map {$0.uuidString })
+    }
+    
     private func cleanup(tempFileURL: URL) {
         do {
             if FileManager.default.fileExists(atPath: tempFileURL.path) {
