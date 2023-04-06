@@ -30,8 +30,7 @@ export default function AppMetaList({ reload }) {
       <Card
         variant="outlined"
         sx={{
-          minWidth: 200,
-          maxWidth: 350,
+          width: 300,
           height: 200,
           margin: 2,
         }}
