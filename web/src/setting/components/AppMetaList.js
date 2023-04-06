@@ -6,13 +6,16 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActionArea,
   Box,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import KeyIcon from "@mui/icons-material/Key";
 import * as api from "../../api";
 
 export default function AppMetaList({ reload }) {
   const [data, setData] = useState(null);
+  const [accessTokenCopied, setAccessTokenCopied] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -25,20 +28,42 @@ export default function AppMetaList({ reload }) {
   function ItemCard({ item }) {
     return (
       <Card variant="outlined" sx={{ width: 300, height: 200 }}>
-        <CardActionArea>
-          <CardContent>
-            <Typography gutterBottom variant="h5">
-              {item.platform == "ios" ? <AppleIcon /> : <AndroidIcon />}
-              {item.title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{
-                wordWrap: "break-word"
-            }}>
-              {item.content}
-            </Typography>
-            <Box width={1000} height={1000} />
-          </CardContent>
-        </CardActionArea>
+        <CardContent>
+          <Typography gutterBottom variant="h5">
+            {item.platform == "ios" ? <AppleIcon /> : <AndroidIcon />}
+            {item.title}
+            <Tooltip
+              title={
+                accessTokenCopied
+                  ? "Access token copied"
+                  : "Click to copy access token"
+              }
+              onClose={() => {
+                setAccessTokenCopied(false);
+              }}
+            >
+              <IconButton
+                color="inherit"
+                onClick={() => {
+                  navigator.clipboard.writeText(item.accessToken);
+                  setAccessTokenCopied(true);
+                }}
+              >
+                <KeyIcon />
+              </IconButton>
+            </Tooltip>
+          </Typography>
+
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              wordWrap: "break-word",
+            }}
+          >
+            {item.content}
+          </Typography>
+        </CardContent>
       </Card>
     );
   }
