@@ -3,7 +3,6 @@ import AppleIcon from "@mui/icons-material/Apple";
 import AndroidIcon from "@mui/icons-material/Android";
 import {
   Typography,
-  Grid,
   Card,
   CardContent,
   Box,
@@ -28,13 +27,19 @@ export default function AppMetaList({ reload }) {
 
   function ItemCard({ item }) {
     return (
-      <Card variant="outlined" sx={{ minWidth: 300, height: 200 }}>
+      <Card
+        variant="outlined"
+        sx={{
+          minWidth: 200,
+          maxWidth: 350,
+          height: 200,
+          margin: 2,
+        }}
+      >
         <CardContent>
-          <Stack direction="row" alignItems="flex-start">
-            <Typography gutterBottom variant="h5">
-              {item.platform == "ios" ? <AppleIcon /> : <AndroidIcon />}
-              {item.title}
-            </Typography>
+          <Stack direction="row" alignItems="flex-start" spacing={1}>
+            {item.platform == "ios" ? <AppleIcon /> : <AndroidIcon />}
+            <Typography variant="h6">{item.title}</Typography>
             <Box sx={{ flexGrow: 1 }} />
             <Tooltip
               title={
@@ -72,13 +77,15 @@ export default function AppMetaList({ reload }) {
   }
 
   return (
-    <Grid container spacing={2} padding={2}>
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        margin: 2,
+      }}
+    >
       {data != null &&
-        data.items.map((item) => (
-          <Grid key={item.id} mx={2} my={2}>
-            <ItemCard item={item} />
-          </Grid>
-        ))}
-    </Grid>
+        data.items.map((item) => <ItemCard key={item.id} item={item} />)}
+    </Box>
   );
 }
