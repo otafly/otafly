@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   Box,
+  Stack,
   IconButton,
   Tooltip,
 } from "@mui/material";
@@ -27,11 +28,14 @@ export default function AppMetaList({ reload }) {
 
   function ItemCard({ item }) {
     return (
-      <Card variant="outlined" sx={{ width: 300, height: 200 }}>
+      <Card variant="outlined" sx={{ minWidth: 300, height: 200 }}>
         <CardContent>
-          <Typography gutterBottom variant="h5">
-            {item.platform == "ios" ? <AppleIcon /> : <AndroidIcon />}
-            {item.title}
+          <Stack direction="row" alignItems="flex-start">
+            <Typography gutterBottom variant="h5">
+              {item.platform == "ios" ? <AppleIcon /> : <AndroidIcon />}
+              {item.title}
+            </Typography>
+            <Box sx={{ flexGrow: 1 }} />
             <Tooltip
               title={
                 accessTokenCopied
@@ -52,8 +56,7 @@ export default function AppMetaList({ reload }) {
                 <KeyIcon />
               </IconButton>
             </Tooltip>
-          </Typography>
-
+          </Stack>
           <Typography
             variant="body2"
             color="text.secondary"
