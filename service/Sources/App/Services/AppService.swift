@@ -64,10 +64,20 @@ class AppService {
                 continue
             }
         }
+
+#if os(Linux)
+        let array = (packages.map(AppPackageObjC.init) as NSArray).sortedArray(using: [
+            .init(keyPath: \AppPackageObjC.authorAt, ascending: false),
+            .init(keyPath: \AppPackageObjC.updatedAt, ascending: false)
+        ]) as! [AppPackageObjC]
+        packages = array.map { $0.package }
+#else
         packages.sort(using: [
             KeyPathComparator(\.authorAt, order: .reverse),
             KeyPathComparator(\.updatedAt, order: .reverse)
         ])
+#endif
+        
         return packages
     }
     
@@ -194,3 +204,21 @@ extension AppPackageModel.Item {
         url = try svc.getInstallURL(package: dbItem, baseURL: baseURL)
     }
 }
+
+#if os(Linux)
+
+final class AppPackageObjC: NSObject {
+    
+    let package: AppPackage
+    
+    @objc dynamic var authorAt: Date? { package.authorAt }
+    
+    @objc dynamic var updatedAt: Date? { package.updatedAt }
+    
+    init(_ package: AppPackage) {
+        self.package = package
+        super.init()
+    }
+}
+
+#endif
