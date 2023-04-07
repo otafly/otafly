@@ -140,7 +140,7 @@ struct AppPackageController: RouteCollection {
 
 struct AppPackageModel: Content {
     
-    enum QueryPlatform: Content {
+    enum QueryPlatform: String, Content {
         case all
         case ios
         case android
