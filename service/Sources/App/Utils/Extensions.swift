@@ -33,3 +33,18 @@ extension String {
         replacingOccurrences(of: "+", with: "%20").removingPercentEncoding
     }
 }
+
+extension Optional: Comparable where Wrapped: Comparable {
+    
+    public static func < (lhs: Optional, rhs: Optional) -> Bool {
+        if let lhs, let rhs {
+            return lhs < rhs
+        } else if lhs == nil {
+            return true
+        } else if rhs == nil {
+            return false
+        } else {
+            return true
+        }
+    }
+}
