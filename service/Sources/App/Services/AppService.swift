@@ -7,10 +7,12 @@ class AppService {
     
     let app: Application
     let storage: FileStorage
+    let packageCache: ModelCache<AppPackage>
     
     init(app: Application) {
         self.app = app
         storage = FileStorage(packageDir: app.baseDir.appendingPathComponent("packages"))
+        packageCache = .init()
     }
     
     func queryMeta() async throws -> [AppMeta] {
@@ -42,12 +44,31 @@ class AppService {
         try await AppPackage.query(on: app.db).filter(\.$id == id).first()
     }
     
-    func queryLatestPackages() async throws -> [AppPackage] {
-        guard let sql = app.db as? SQLDatabase else {
-            throw Abort(.internalServerError)
+    func queryLatestPackages(platform: Platform?) async throws -> [AppPackage] {
+        var packages = [AppPackage]()
+        var builder = AppMeta.query(on: app.db)
+        if let platform {
+            builder = builder.filter(\.$platform == platform)
         }
-        return try await sql.raw("SELECT p.* FROM app_meta m INNER JOIN app_package p ON p.app_meta_id = m.id WHERE p.id = (SELECT id FROM app_package WHERE app_meta_id = m.id ORDER BY author_at DESC, updated_at DESC LIMIT 1) ORDER BY p.author_at DESC, p.updated_at DESC")
-            .all(decoding: AppPackage.self)
+        for appId in try await builder.unique().all(\.$id) {
+            if let package = await packageCache.get(key: appId.uuidString) {
+                packages.append(package)
+            } else if let package = try await AppPackage.query(on: app.db)
+                .filter(\.$appMeta.$id == appId)
+                .sort(\.$authorAt, .descending)
+                .sort(\.$updatedAt, .descending)
+                .first() {
+                packages.append(package)
+                await packageCache.set(key: appId.uuidString, model: package)
+            } else {
+                continue
+            }
+        }
+        packages.sort(using: [
+            KeyPathComparator(\.authorAt, order: .reverse),
+            KeyPathComparator(\.updatedAt, order: .reverse)
+        ])
+        return packages
     }
     
     func queryPackages(appId: UUID) async throws -> [AppPackage] {
@@ -62,14 +83,15 @@ class AppService {
         defer {
             cleanup(tempFileURL: tempFileURL)
         }
-        guard let meta = try await findMeta(accessToken: accessToken) else {
+        guard let appMeta = try await findMeta(accessToken: accessToken) else {
             throw Abort(.badRequest, reason: "invalid token")
         }
-        let info = try meta.platform.packageResolver.extract(tempFileURL)
-        let package = try AppPackage(id: UUID(), appMeta: meta, info: info, content: content, authorAt: date)
+        let info = try appMeta.platform.packageResolver.extract(tempFileURL)
+        let package = try AppPackage(id: UUID(), appMeta: appMeta, info: info, content: content, authorAt: date)
         let dest = storage.localUrlFor(id: try package.requireID().uuidString)
         try FileManager.default.moveItem(at: tempFileURL, to: dest)
         try await package.save(on: app.db)
+        await packageCache.remove(key: try appMeta.requireID().uuidString)
     }
     
     func getPackageManifestXml(id: UUID, baseURL: String) async throws -> Data? {

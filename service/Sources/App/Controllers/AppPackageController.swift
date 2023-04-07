@@ -43,8 +43,11 @@ struct AppPackageController: RouteCollection {
     
     func query(req: Request) async throws -> AppPackageModel {
         let query = try req.query.decode(AppPackageModel.Query.self)
-        guard let id = UUID(uuidString: query.appId) else {
-            throw Abort(.badRequest, reason: "wrong appId format: \(query.appId)")
+        guard let appId = query.appId else {
+            throw Abort(.badRequest, reason: "missing appId")
+        }
+        guard let id = UUID(uuidString: appId) else {
+            throw Abort(.badRequest, reason: "wrong appId format: \(appId)")
         }
         async let appTask = app.appSvc.getMeta(id: id)
         async let packagesTask = app.appSvc.queryPackages(appId: id)
@@ -96,7 +99,10 @@ struct AppPackageController: RouteCollection {
     }
     
     func queryLatest(req: Request) async throws -> AppPackageModel {
-        try await app.appSvc.queryLatestPackages().mapToModel(req: req)
+        let query = try req.query.decode(AppPackageModel.Query.self)
+        return try await app.appSvc
+            .queryLatestPackages(platform: query.platform.toValue(req: req))
+            .mapToModel(req: req)
     }
     
     func getManifest(req: Request) async throws -> Response {
@@ -134,8 +140,15 @@ struct AppPackageController: RouteCollection {
 
 struct AppPackageModel: Content {
     
+    enum QueryPlatform: Content {
+        case all
+        case ios
+        case android
+    }
+    
     struct Query: Content {
-        let appId: String
+        let appId: String?
+        let platform: QueryPlatform?
     }
     
     struct Item: Content {
@@ -156,6 +169,28 @@ struct AppPackageModel: Content {
     let items: [Item]
     
     let app: AppMetaModel.Item?
+}
+
+private extension Request {
+    
+    var platformFromAgent: Platform? {
+        guard let userAgent = headers[.userAgent].first else { return nil }
+        if userAgent.contains("iPhone") || userAgent.contains("iPad") { return .ios }
+        if userAgent.contains("Android") { return .android }
+        return nil
+    }
+}
+
+private extension Optional<AppPackageModel.QueryPlatform> {
+    
+    func toValue(req: Request) -> Platform? {
+        switch self {
+        case .none: return req.platformFromAgent
+        case .all: return nil
+        case .ios: return .ios
+        case .android: return .android
+        }
+    }
 }
 
 private extension Sequence where Element == AppPackage {
