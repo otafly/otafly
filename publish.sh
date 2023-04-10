@@ -1,5 +1,4 @@
 DEST_DIR="$1"
-PUB_DIR=".pub"
 
 set -e
 
@@ -10,13 +9,14 @@ npm run build
 cd ../service
 swift build -c release
 
-cd ../
-rm -rf "$PUB_DIR"
-mkdir "$PUB_DIR"
+TMP_DEST_DIR="$DEST_DIR.tmp"
+rm -rf "$TMP_DEST_DIR"
+mkdir "$TMP_DEST_DIR"
 
-mv service/Public "$PUB_DIR/Public"
-mv service/.build/release/Run "$PUB_DIR/Run"
+mv .env "$TMP_DEST_DIR/.env"
+mv Public "$TMP_DEST_DIR/Public"
+mv .build/release/Run "$TMP_DEST_DIR/Run"
 
-mkdir -p "$DEST_DIR"
-cp -rf "$PUB_DIR"/* "$DEST_DIR"
-rm -rf "$PUB_DIR"
+test -e "$DEST_DIR/.env" && yes | cp -f "$DEST_DIR/.env" "$TMP_DEST_DIR/.env"
+rm -rf "$DEST_DIR"
+mv "$TMP_DEST_DIR" "$DEST_DIR"
