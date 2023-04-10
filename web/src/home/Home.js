@@ -22,6 +22,16 @@ export default function Home({ reload }) {
       ))
     : null;
 
+  const userAgent = window.navigator.userAgent;
+  var showSettings = false;
+  if (
+    !userAgent.includes("iPhone") &&
+    !userAgent.includes("iPad") &&
+    !userAgent.includes("Android")
+  ) {
+    showSettings = true;
+  }
+
   return (
     <div>
       <AppBar position="static">
@@ -29,9 +39,11 @@ export default function Home({ reload }) {
           <Container sx={{ width: 160 }}>
             <BannerIcon />
           </Container>
-          <IconButton color="inherit" component={Link} to="/view/setting">
-            <SettingsIcon />
-          </IconButton>
+          {showSettings && (
+            <IconButton color="inherit" component={Link} to="/view/setting">
+              <SettingsIcon />
+            </IconButton>
+          )}
         </Toolbar>
       </AppBar>
       <List>{packageItems}</List>
