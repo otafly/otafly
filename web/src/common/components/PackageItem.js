@@ -21,6 +21,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ConstructionIcon from "@mui/icons-material/Construction";
 import CommitIcon from "@mui/icons-material/Commit";
 import UpdateIcon from "@mui/icons-material/Update";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../util";
 
@@ -28,6 +29,7 @@ export default function PackageItem({ item, showMore = true }) {
   const theme = useTheme();
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const [downloadURLCopied, setDownloadURLCopied] = useState(false);
 
   const handleDownloadClick = () => {
     const downloadLink = document.createElement("a");
@@ -46,12 +48,25 @@ export default function PackageItem({ item, showMore = true }) {
   const handleToggleExpand = (event) => {
     if (
       event.target.closest("button.download-btn") ||
-      event.target.closest("button.more-btn")
+      event.target.closest("button.more-btn") ||
+      event.target.closest("button.copy-download-url-btn")
     ) {
       return;
     }
     setExpanded(!expanded);
   };
+
+  const handleCopyDownloadURL = () => {
+    const downloadLink = document.createElement("a");
+    downloadLink.href = item.url;
+    downloadLink.download = item.title;
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    navigator.clipboard.writeText(downloadLink);
+    document.body.removeChild(downloadLink);
+    setDownloadURLCopied(true);
+  };
+
   return (
     <div>
       <ListItem onClick={handleToggleExpand}>
@@ -122,6 +137,32 @@ export default function PackageItem({ item, showMore = true }) {
               >
                 {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </IconButton>
+
+              <Tooltip
+                title={
+                  downloadURLCopied
+                    ? "Download URL copied"
+                    : "Click to copy Download URL"
+                }
+                onClose={() => {
+                  setDownloadURLCopied(false);
+                }}
+              >
+                <IconButton
+                  edge="end"
+                  sx={{
+                    marginLeft: "12px",
+                    color: theme.palette.iconPrimary.main,
+                  }}
+                  onClick={() => {
+                    handleCopyDownloadURL();
+                  }}
+                  className="copy-download-url-btn"
+                >
+                  <ContentCopyIcon />
+                </IconButton>
+              </Tooltip>
+
               <IconButton
                 edge="end"
                 sx={{
