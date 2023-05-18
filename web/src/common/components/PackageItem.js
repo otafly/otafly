@@ -142,7 +142,6 @@ export default function PackageItem({ item, showMore = true }) {
                 <IconButton
                   edge="end"
                   sx={{
-                    marginLeft: "12px",
                     color: theme.palette.iconPrimary.main,
                   }}
                   onClick={() => {
@@ -157,7 +156,6 @@ export default function PackageItem({ item, showMore = true }) {
               <IconButton
                 edge="end"
                 sx={{
-                  marginLeft: "12px",
                   color: theme.palette.iconPrimary.main,
                 }}
                 onClick={handleDownloadClick}
@@ -169,7 +167,6 @@ export default function PackageItem({ item, showMore = true }) {
                 <IconButton
                   edge="end"
                   sx={{
-                    marginLeft: "12px",
                     color: theme.palette.iconPrimary.main,
                   }}
                   onClick={handleMoreClick}
