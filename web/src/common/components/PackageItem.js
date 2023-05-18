@@ -16,8 +16,6 @@ import DownloadIcon from "@mui/icons-material/Download";
 import MoreIcon from "@mui/icons-material/MoreHoriz";
 import AndroidIcon from "@mui/icons-material/Android";
 import AppleIcon from "@mui/icons-material/Apple";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ConstructionIcon from "@mui/icons-material/Construction";
 import CommitIcon from "@mui/icons-material/Commit";
 import UpdateIcon from "@mui/icons-material/Update";
@@ -131,13 +129,6 @@ export default function PackageItem({ item, showMore = true }) {
             </Stack>
             <Box sx={{ flexGrow: 1 }} />
             <Stack direction="row">
-              <IconButton
-                edge="end"
-                sx={{ color: theme.palette.iconPrimary.main }}
-              >
-                {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </IconButton>
-
               <Tooltip
                 title={
                   downloadURLCopied
